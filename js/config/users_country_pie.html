@@ -1,0 +1,17 @@
+<html>
+  <head></head>
+  <body>
+    <div>
+      <canvas id="myChart" height="600" width="600"></canvas>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="users_country_pie.js"></script>
+
+    <script>
+      const ctx = document.getElementById('myChart');
+
+      new Chart(ctx, users_country_pie_config);
+    </script>
+  </body>
+</html>

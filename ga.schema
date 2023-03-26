@@ -1,0 +1,28 @@
+CREATE TABLE if not exists followers(
+timestamp text not null,
+twitter integer not null,
+instagram integer not null,
+facebook integer not null
+);
+
+CREATE TABLE if not exists new_users(
+timestamp text not null,
+count integer not null
+);
+
+CREATE TABLE if not exists users_country(
+country text not null,
+count integer not null
+);
+
+CREATE TABLE if not exists events(
+type text not null,
+name text not null,
+start text not null,
+end text not null,
+public integer not null,
+academia integer not null,
+government integer not null,
+industry integer not null
+);
+

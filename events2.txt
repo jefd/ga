@@ -1,0 +1,38 @@
+(training)    Short-Range Weather Application Training (2022-12-16)
+
+(codefest)    Short-Range Weather CodeFest (2022-12-05 - 2022-12-09)
+
+(codesprint)  EPIC Winter 2022 Code Sprint (2022-11-18)
+
+(hackathon)   EPIC Winter 2022 Hackathon (2022-11-14 - 2022-11-20)
+
+(webinar)     The NOAA Weather Program Office (WPO) presents an informative webinar about the
+              FY23 Funding Opportunity, hosted by the NOAA Central Library on Tuesday,
+              September 6th, 1 to 2 pm EDT. (2022-09-06)
+
+(codesprint)  EPIC Fall 2022 Code Sprint September 9, 2022
+
+(hackathon)   EPIC Fall 2022 Hackathon September 6-11, 2022
+
+(workshop)    AMS Hands-on workshops scheduled for January 8, 2023
+
+              EPIC is  presenting at the AGU Fall Meeting, December 12 – 16,  2022.
+
+(workshop)    Unifying Innovations in Forecasting Capabilities Workshop July 18th-22nd
+
+(shortcourse) AMS Short Course (2022-06-06 )
+
+(codesprint)  EPIC Summer Code Sprint June 10 2022
+
+(hackathon)   EPIC Summer Hackathon June 13 – 18, 2022 
+
+              UFS and EPIC Coastal and Ocean Modeling Town Hall at the AGU Ocean Sciences 2022 (Feb 24-March 4 2022)
+
+              The First Symposium on Earth Prediction Innovation and Community Modeling As
+              part of the American Meteorological Society (AMS) (Jan 24 and Jan 26 2022)
+
+              American Meteorological Society (AMS) 102nd Annual Meeting (January 23-27, 2022)
+
+              EPIC Presents at AGU Fall Meeting (December 14-15, 2021)
+
+              American Geophysical Union (AGU) Fall Meeting 2021 (13-17 December, 2021)

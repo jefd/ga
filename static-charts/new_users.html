@@ -1,0 +1,36 @@
+<html>
+  <head></head>
+  <body>
+<div>
+  <canvas id="myChart"></canvas>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="new_users.js"></script>
+
+<script>
+  const ctx = document.getElementById('myChart');
+
+  const opts = {
+      indexAxis: 'y',
+      scales: {
+        y: {
+          beginAtZero: true
+        }
+      }
+    }; 
+
+  const config = {
+    type: 'bar',
+    data: data,
+    options: opts, 
+  };
+
+  new Chart(ctx, config);
+</script>
+
+
+
+
+  </body>
+</html>

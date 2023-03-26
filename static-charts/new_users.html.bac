@@ -1,0 +1,58 @@
+<html>
+  <head></head>
+  <body>
+<div>
+  <canvas id="myChart"></canvas>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="new_users.js"></script>
+
+<script>
+  const decimation = 15;
+
+  const ctx = document.getElementById('myChart');
+
+  let pruned_labels = [];
+  let pruned_data = [];
+
+  for(const [i, val] of labels.entries()) {
+    if (i % decimation === 0)
+      pruned_labels.push(val);
+  }
+  for(const [i, val] of data.entries()) {
+    if (i % decimation === 0)
+      pruned_data.push(val);
+  }
+
+  const opts = {
+      indexAxis: 'y',
+      scales: {
+        y: {
+          beginAtZero: true
+        }
+      }
+    }; 
+
+  const config = {
+    type: 'bar',
+    data: {
+      labels: pruned_labels,
+      datasets: [{
+        label: 'New Users',
+        data: pruned_data,
+        backgroundColor: '#0099D8',
+        borderWidth: 1
+      }]
+    },
+    options: opts, 
+  };
+
+  new Chart(ctx, config);
+</script>
+
+
+
+
+  </body>
+</html>

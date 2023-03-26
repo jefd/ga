@@ -1,0 +1,167 @@
+const INITIAL_METRIC = 'new_users';
+
+const METRICS = [
+    {name: 'new_users', title: 'New Users'}, 
+    {name: 'social', title: 'Social Media'}, 
+    {name: 'users_country', title: 'Users By Country'}, 
+    {name: 'events', title: 'Events'}, 
+];
+
+
+
+let data = {
+  labels: ['a', 'b', 'c', 'd'],
+  datasets: [
+    {
+      label: 'Dataset 1',
+      data: [1, 2, 3, 4],
+    },
+    {
+      label: 'Dataset 2',
+      data: [5, 6, 7, 8],
+    }
+  ]
+};
+
+let opts = {
+    'responsive':true,
+    plugins: {
+        legend: {
+            display: true,
+            position: 'top',
+            align: 'center',
+            labels: {
+                fontSize: 16,
+            }
+        },
+
+    },
+    scales: {
+        y: {
+            'drawOnChartArea': false,
+            'lineWidth': 2
+        },
+        x: {
+            'drawOnChartArea': false,
+            'lineWidth': 2
+        }
+    }
+
+};
+
+
+function Dash(initialVnode) {
+
+    let model = {
+        selectedMetric: INITIAL_METRIC,
+        metric: INITIAL_METRIC,
+        data: null,
+        chart: null,
+	    loaded: false,	
+        error: "",
+    };
+
+    function initData() {
+		model.data = data;
+    }
+
+    function metricCallback(e) {
+        model.selectedMetric = e.target.value;
+        console.log('selected metric = ' + model.selectedMetric)
+        return '';
+    }
+
+    function submitCallback(e) {
+        model.metric = model.selectedMetric;
+        console.log('metric = ' + model.metric);
+        return '';
+    }
+
+    /************************** View Functions ***********************/
+    function selectView(id, name,  repo_titles, callback) {
+
+
+        let opts = repo_titles.map(function(option) {
+
+            if (option.hasOwnProperty('owner')) {
+                return m("option", {value: `${option.owner}/${option.name}`}, option.title);
+            }
+            else {
+                return m("option", {value: option.name}, option.title);
+            }
+
+        });
+
+        return m("select", {id: id, name: name, onchange: callback}, opts);
+    }
+
+    function formView(id, name, children) {
+
+        return m("form", {id: id, name: name}, children);
+    }
+
+
+    function createChart(vnode) {
+        const ctx = vnode.dom.getContext('2d');
+
+        model.chart = new Chart(ctx, {
+            type: "line",
+            data: model.data,
+            options: opts
+            });
+    }
+
+    function chartView(vnode) {
+        return m("canvas#chart", {oncreate: createChart});
+    }
+
+    function buttonView(label, callback){
+        return m("button", {type: "button", onclick: callback}, label);
+    }
+
+
+    function view(vnode) {
+
+        let metricLabel = m("label", {for: 'metric-select'}, "Metric");
+        let metricSelect = selectView('metric-select', 'metric-select', METRICS, metricCallback);
+
+        let btn = buttonView('Submit', submitCallback);
+
+
+        let frm = formView('dash-form', 'dash-form', [metricLabel, metricSelect, btn]);
+
+        let dv = null;
+        dv = chartView(vnode);
+
+        return [
+            frm, 
+            dv,
+        ];
+
+
+    }
+    /*****************************************************************/
+
+	function init(vnode){
+        // let url = "https://jsonplaceholder.typicode.com/todos/1";
+        //let url = "https://rayv-webix4.jpl.nasa.gov/devel/ep/wp-json/dash/v1/ufs-weather-model/views/";
+
+        return initData();
+	}
+
+    return {
+        oninit: init,
+        view: view,
+        }
+}
+
+let root = document.getElementById('ga-app');
+
+
+m.mount(root, Dash);
+
+
+
+
+
+

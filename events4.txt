@@ -1,0 +1,4 @@
+type,name,start,end,public,academia,industry,government
+ams_short_course,AMS Short Course,2022-06-06,2022-06-06,50,0,0,0 
+agu,AGU,2022-12-12,2022-12-16,3,3,1,0 
+uifcw_workshop,UIFCW Workshop,2022-07-18,2022-07-22,0,0,0,0 
