@@ -4,7 +4,7 @@ const METRICS = [
     {name: 'new_users', title: 'New Users'}, 
     {name: 'social', title: 'Social Media'}, 
     {name: 'users_country', title: 'Users By Country'}, 
-    {name: 'events', title: 'Events'}, 
+    {name: 'hackathons', title: 'Hackathons'}, 
 ];
 
 function Dash(initialVnode) {
@@ -19,7 +19,8 @@ function Dash(initialVnode) {
     };
 
     function initData() {
-		model.chart_config = new_users_config;
+		//model.chart_config = new_users_config;
+		model.chart_config = get_new_users_config();
         console.log("**** CHART CONFIG **** ", model.chart_config);
     }
 
@@ -31,7 +32,8 @@ function Dash(initialVnode) {
     function submitCallback(e) {
         model.metric = model.selectedMetric;
         console.log('metric = ' + model.metric);
-		model.chart_config = users_country_pie_config;
+		//model.chart_config = users_country_pie_config;
+		model.chart_config = get_users_country_config();
         console.log("**** CHART CONFIG **** ", model.chart_config);
         console.log("**** CHART **** ", model.chart);
         //model.chart.update();
