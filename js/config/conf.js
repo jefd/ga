@@ -33,6 +33,7 @@ function get_new_users_config() {
 
 
     let opts = {
+        animation: false,
         indexAxis: 'y',
         scales: {
           y: {
@@ -55,7 +56,7 @@ function get_hakcathon_config() {
     let labels = ['2022-06-01', '2022-09-01', '2022-11-01',];
 
     let data = {
-      labels: hackathon_labels,
+      labels: labels,
       datasets: [
         {
           label: 'General Public',
@@ -82,6 +83,7 @@ function get_hakcathon_config() {
 
 
     let opts = {
+        animation: false,
         plugins: {
           title: {
             display: true,
@@ -155,6 +157,7 @@ function get_users_country_config() {
     };
 
     let opts = {
+        //animation: false,
         plugins: {
             title: {
                 display: true,
@@ -166,7 +169,7 @@ function get_users_country_config() {
     }; 
 
     let config = {
-        type: 'pie',
+        type: 'doughnut',
         data: data,
         options: opts,
     };
@@ -301,6 +304,7 @@ function get_social_config() {
     };
 
     let opts = {
+        animation: false,
         plugins: {
           title: {
             display: true,
@@ -336,7 +340,7 @@ const MOCK = {
     'new_users': get_new_users_config,
     'social': get_social_config,
     'users_country': get_users_country_config,
-    'hackathon':get_hakcathon_config,
+    'hackathons':get_hakcathon_config,
 };
 
 
