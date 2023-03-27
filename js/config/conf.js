@@ -333,14 +333,11 @@ function get_social_config() {
 }
 
 
-const mock = {
-}
-
 const MOCK = {
     'new_users': get_new_users_config,
     'social': get_social_config,
     'users_country': get_users_country_config,
-    'hackathons':get_hakcathon_config,
+    'hackathons': get_hakcathon_config,
 };
 
 
