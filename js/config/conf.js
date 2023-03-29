@@ -33,7 +33,8 @@ function get_new_users_config() {
 
 
     let opts = {
-        animation: false,
+        responsive: true,
+        //animation: false,
         indexAxis: 'y',
         scales: {
           y: {
@@ -83,7 +84,7 @@ function get_hakcathon_config() {
 
 
     let opts = {
-        animation: false,
+        //animation: false,
         plugins: {
           title: {
             display: true,
@@ -165,7 +166,7 @@ function get_users_country_config() {
             },
         },
         responsive: true,
-        maintainAspectRatio: false,
+        //maintainAspectRatio: false,
     }; 
 
     let config = {
@@ -304,7 +305,7 @@ function get_social_config() {
     };
 
     let opts = {
-        animation: false,
+        //animation: false,
         plugins: {
           title: {
             display: true,

@@ -30,13 +30,15 @@ function Dash(initialVnode) {
 
     function metricCallback(e) {
         //e.redraw = false;
-        model.chart.destroy();
         model.selectedMetric = e.target.value;
         console.log('selected metric = ' + model.selectedMetric)
     }
 
     function submitCallback(e) {
+        // destroy chart and set to null to trigger 
+        // chart re-creation.
         model.chart.destroy();
+        model.chart = null;
         model.metric = model.selectedMetric;
         console.log('metric = ' + model.metric);
         //model.chart.update();
@@ -55,12 +57,12 @@ function Dash(initialVnode) {
         console.log('model.startDate = ' + model.startDate);
         console.log('model.endDate = ' + model.endDate);
 
-		model.chart_config = MOCK[model.metric]();
+        model.chart_config = MOCK[model.metric]();
     }
 
     function startDateCallback(e) {
         
-        model.chart.destroy();
+        //model.chart.destroy();
         //model.showDLink = false;
         model.startDate = e.target.value;
         if (! model.startDate )
@@ -71,7 +73,7 @@ function Dash(initialVnode) {
     }
 
     function endDateCallback(e) {
-        model.chart.destroy();
+        //model.chart.destroy();
         //model.showDLink = false;
         model.endDate = e.target.value;
         if (! model.endDate )
@@ -96,9 +98,10 @@ function Dash(initialVnode) {
     }
 
     function createChart(vnode) {
-        const ctx = vnode.dom.getContext('2d');
-
-        model.chart = new Chart(ctx, model.chart_config);
+        if (model.chart === null) {
+            const ctx = vnode.dom.getContext('2d');
+            model.chart = new Chart(ctx, model.chart_config);
+        }
     }
 
     function chartView(vnode) {
