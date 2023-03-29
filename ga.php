@@ -11,8 +11,8 @@ function ga_dash_board($atts) {
     
     return <<<EOT
     <div id="dashboard-app"></div>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.2.1"></script>
-    <script src="https://unpkg.com/mithril@2.2.2/mithril.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/mithril/mithril.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/jefd/dash@{$VERSION}/wp-content/themes/hello-elementor-child/js/dash.js"></script>
     EOT;
 }
@@ -25,42 +25,73 @@ add_action('rest_api_init', function () {
     ));
 });
 
-function get_new_users($table_name, $start, $end) {
+
+function new_users_config($table_name, $start, $end) {
     global $GA_DB_PATH;
+
+    function datasets($data) {
+        $ds = [
+            'label' => 'New Users',
+            'data' => $data,
+            'backgroundColor' => '#0099D8',
+            'borderWidth' => 1
+        ];
+
+        return [$ds];
+    }
+
+    function format_data($labels, $datasets)
+    {
+        $data = [
+            'labels' => $labels,
+            'datasets' => $datasets
+        ];
+        return $data;
+    }
+
+    function opts() {
+        $opts = [
+            'responsive' => true,
+            'indexAxis' => 'y',
+            'scales' => ['y' => ['beginAtZero' => true]],
+        ];
+
+        return $opts;
+
+    }
+
+    function config($formatted_data, $opts) {
+        return [
+            'type' => 'bar',
+            'data' => $formatted_data,
+            'options' => $opts
+        ];
+    }
     try {
 
         $db = new PDO("sqlite:$GA_DB_PATH");
-        //$res = $db -> query("select * from \"$table_name\";");
-        //$res = $db -> query("select * from \"$table_name\" where timestamp>=\"2022-08-23\" and timestamp<=\"2022-08-27\";");
-        //$start .= 'T00:00:00Z'; $end .= 'T00:00:00Z';
-        //$res = $db -> query("select * from \"$table_name\" where timestamp>=\"$start\" and timestamp<=\"$end\" order by timestamp;");
-        $res = $db -> query('select * from new_users order by timestamp;');
+        $res = $db -> query("select * from \"$table_name\" where timestamp>=\"$start\" and timestamp<=\"$end\" order by timestamp;");
 
-        $lst = [];
+        $labels = [];
+        $data = [];
         foreach ($res as $row) {
 
-            $o = Array();
-
-            $o['timestamp'] = $row['timestamp'];
-            $o['count'] = intval($row['count']);
-
-            $lst[] = $o;
+            $labels[] = $row['timestamp'];
+            $data[] = intval($row['count']);
 
         }
-        $body = json_decode(json_encode(["new_users" => $lst]));
-        //$data = get_data($body);
-        //$chart_data = format_data($data);
-    
+        $datasets = datasets($data); 
+        $formatted_data =  format_data($labels, $datasets);
+        $opts = opts();
+        $config = config($formatted_data, $opts);
+
     }
     catch(PDOException $e) {
         //$chart_data = ["message" => $e->getMessage()];
-        $body = ["message" => $e->getMessage()];
+        $config = ["message" => $e->getMessage()];
     }
 
-    
-    //return $chart_data;
-    return $body;
-    //return ['data' => 'hi'];
+    return $config;
 }
 
 function get_ga_data($request) {
@@ -69,6 +100,12 @@ function get_ga_data($request) {
     $start = $request->get_param('start');
     $end = $request->get_param('end');
 
+
+    /****************** Testing Only ********************/
+    $start = '2023-01-25';
+    $end = '2023-03-25';
+    /****************** Testing Only ********************/
+
     if (!$start)
         $start = '1970-01-01';
 
@@ -76,17 +113,13 @@ function get_ga_data($request) {
         $end = '2050-01-01';
 
     if ($metric == "new_users") {
-        //$data = get_view_chart_data($url, $args);
-        $data = get_new_users('new_users', $start, $end); 
+        $table = "new_users";
+        $data = new_users_config($table, $start, $end); 
     }
     else {
         $data = ['metric' => $metric];
         
     }
-
-    
-
-    //$data = ['metric' => $metric];
 
     $response = new WP_REST_Response($data);
     $response->set_status(200);
