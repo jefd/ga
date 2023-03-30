@@ -1,13 +1,20 @@
+//const BASE_URL =  "https://epic.noaa.gov";
+//const BASE_URL =  "https://rayv-webix4.jpl.nasa.gov/devel/ep";
+const BASE_URL =  "";
+const API_PATH = "/wp-json/ga/v1";
+
 const INITIAL_METRIC = 'new_users';
 
 const DEFAULT_START_DATE = '2022-01-25';
 const DEFAULT_END_DATE = new Date().toISOString().substring(0, 10)
 
 const METRICS = [
-    {name: 'new_users', title: 'New Users'}, 
-    {name: 'social', title: 'Social Media'}, 
-    {name: 'users_country', title: 'Users By Country'}, 
-    {name: 'hackathons', title: 'Hackathons'}, 
+    {name: 'new_users', type: 'web', title: 'New Users'}, 
+    {name: 'users_country', type: 'web', title: 'Users By Country'}, 
+    {name: 'followers', type: 'social', title: 'Social Media Followers'}, 
+    {name: 'hackathon', type: 'event', title: 'Hackathon Participants'}, 
+    {name: 'codesprint', type: 'event', title: 'Code Sprint Participants'}, 
+    {name: 'codefest', type: 'event', title: 'Code Fest Participants'}, 
 ];
 
 function Dash(initialVnode) {
@@ -23,6 +30,26 @@ function Dash(initialVnode) {
         endDate: DEFAULT_END_DATE,
         showDatePicker: true,
     };
+
+    function get_metric(name) {
+        for (metric of METRICS) {
+            if (metric['name'] === name) {
+                return metric
+            }
+        }
+    }
+
+    function getUrl() {
+        let current_metric = get_metric(model.metric);
+
+        if (current_metric['type'] === 'event') {
+            return `${BASE_URL}${API_PATH}/events/?start=${model.startDate}&end=${model.endDate}&type=${model.metric}`;
+        }
+        else {
+            return `${BASE_URL}${API_PATH}/${model.metric}/?start=${model.startDate}&end=${model.endDate}`;
+        }
+
+    }
 
     function initData() {
 		model.chart_config = MOCK[model.metric]();
@@ -41,6 +68,7 @@ function Dash(initialVnode) {
         model.chart = null;
         model.metric = model.selectedMetric;
         console.log('metric = ' + model.metric);
+        console.log('url = ' + getUrl());
         //model.chart.update();
 
         // Date sanity checks

@@ -5,6 +5,18 @@ $VERSION = 'v1.0.0';
 
 $GA_DB_PATH = dirname(__FILE__) . '/ga.db';
 
+
+/************************************* Constants *******************************************/
+// map of event types to titles
+$EVENTS = ["hackathon" => "Hackathon Participants",
+           "codesprint" => "Code Sprint Participants",
+           "codefest" => "Code Fest Participants",
+];
+
+/*******************************************************************************************/
+
+
+
 add_shortcode( 'ga', 'ga_dash_board');
 function ga_dash_board($atts) {
     global $VERSION;
@@ -300,9 +312,10 @@ function events_config($table_name, $event_type, $start, $end) {
     }
 
     function opts($event_type) {
+        global $EVENTS;
         $opts = [
             'responsive' => true,
-            'plugins' => ['title' => ['display' => true, 'text' => $event_type]],
+            'plugins' => ['title' => ['display' => true, 'text' => $EVENTS[$event_type]]],
             'indexAxis' => 'y',
             'scales' => ['x' => ['stacked' => true], 'y' => ['stacked' => true]],
         ];

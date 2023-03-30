@@ -336,9 +336,11 @@ function get_social_config() {
 
 const MOCK = {
     'new_users': get_new_users_config,
-    'social': get_social_config,
+    'followers': get_social_config,
     'users_country': get_users_country_config,
-    'hackathons': get_hakcathon_config,
+    'hackathon': get_hakcathon_config,
+    'codesprint': get_hakcathon_config,
+    'codefest': get_hakcathon_config,
 };
 
 
