@@ -175,6 +175,92 @@ function users_country_config($table_name, $start, $end) {
     return $config;
 }
 
+function followers_config($table_name, $start, $end) {
+    global $GA_DB_PATH;
+
+    function datasets($twitter, $ig, $fb) {
+        $ds = [];
+
+        $ds[] = ['label' => 'Twitter',
+                 'data' => $twitter,
+                 'backgroundColor' => '#0099D8',
+                ];
+
+        $ds[] = ['label' => 'Instagram',
+                 'data' => $ig,
+                 'backgroundColor' => '#D97200',
+                ];
+
+        $ds[] = ['label' => 'Facebook',
+                 'data' => $fb,
+                 'backgroundColor' => '#00A54F',
+                ];
+
+        return $ds;
+    }
+
+    function format_data($labels, $datasets)
+    {
+        $data = [
+            'labels' => $labels,
+            'datasets' => $datasets
+        ];
+        return $data;
+    }
+
+    function opts() {
+        $opts = [
+            'responsive' => true,
+            'plugins' => ['title' => ['display' => true, 'text' => 'Social Media Followers']],
+            'indexAxis' => 'y',
+            'scales' => ['x' => ['stacked' => true], 'y' => ['stacked' => true]],
+        ];
+
+        return $opts;
+
+    }
+
+    function config($formatted_data, $opts) {
+        return [
+            'type' => 'bar',
+            'data' => $formatted_data,
+            'options' => $opts
+        ];
+    }
+
+    try {
+
+        $db = new PDO("sqlite:$GA_DB_PATH");
+        $res = $db -> query("select * from \"$table_name\" where timestamp>=\"$start\" and timestamp<=\"$end\" order by timestamp;");
+
+        $labels = [];
+        $twitter = [];
+        $instagram = [];
+        $facebook = [];
+        foreach ($res as $row) {
+
+            $labels[] = $row['timestamp'];
+            $twitter[] = intval($row['twitter']);
+            $instagram[] = intval($row['instagram']);
+            $facebook[] = intval($row['facebook']);
+
+        }
+        $datasets = datasets($twitter, $instagram, $facebook); 
+        $formatted_data =  format_data($labels, $datasets);
+        $opts = opts();
+        $config = config($formatted_data, $opts);
+
+        //$config = config(format_data($labels, datasets($data)), opts());
+
+    }
+    catch(PDOException $e) {
+        //$chart_data = ["message" => $e->getMessage()];
+        $config = ["message" => $e->getMessage()];
+    }
+
+    return $config;
+}
+
 function get_ga_data($request) {
     $metric = $request['metric'];
 
@@ -183,8 +269,8 @@ function get_ga_data($request) {
 
 
     /****************** Testing Only ********************/
-    $start = '2023-01-25';
-    $end = '2023-03-25';
+    $start = '2022-01-25';
+    $end = '2023-03-30';
     /****************** Testing Only ********************/
 
     if (!$start)
@@ -200,6 +286,10 @@ function get_ga_data($request) {
     else if ($metric == "users_country") {
         $table = "users_country";
         $data = users_country_config($table, $start, $end); 
+    }
+    else if ($metric == "followers") {
+        $table = "followers";
+        $data = followers_config($table, $start, $end); 
     }
     else {
         $data = ['metric' => $metric];

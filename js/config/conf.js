@@ -180,7 +180,7 @@ function get_users_country_config() {
 
 function get_social_config() {
 
-    let social_labels = [
+    let labels = [
         '2022-02-13',
         '2022-02-24',
         '2022-03-01',
@@ -284,7 +284,7 @@ function get_social_config() {
 
 
     let data = {
-      labels: social_labels,
+      labels: labels,
       datasets: [
         {
           label: 'Twitter',
