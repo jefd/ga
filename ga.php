@@ -261,6 +261,99 @@ function followers_config($table_name, $start, $end) {
     return $config;
 }
 
+function events_config($table_name, $event_type, $start, $end) {
+    global $GA_DB_PATH;
+
+    function datasets($gp, $ac, $gov, $ind) {
+        $ds = [];
+
+        $ds[] = ['label' => 'General Public',
+                 'data' => $gp,
+                 'backgroundColor' => '#0A4595',
+                ];
+
+        $ds[] = ['label' => 'Academia',
+                 'data' => $ac,
+                 'backgroundColor' => '#0099D8',
+                ];
+
+        $ds[] = ['label' => 'Government',
+                 'data' => $gov,
+                 'backgroundColor' => '#D97200',
+                ];
+
+        $ds[] = ['label' => 'Industry',
+                 'data' => $ind,
+                 'backgroundColor' => '#00A54F',
+                ];
+
+        return $ds;
+    }
+
+    function format_data($labels, $datasets)
+    {
+        $data = [
+            'labels' => $labels,
+            'datasets' => $datasets
+        ];
+        return $data;
+    }
+
+    function opts($event_type) {
+        $opts = [
+            'responsive' => true,
+            'plugins' => ['title' => ['display' => true, 'text' => $event_type]],
+            'indexAxis' => 'y',
+            'scales' => ['x' => ['stacked' => true], 'y' => ['stacked' => true]],
+        ];
+
+        return $opts;
+
+    }
+
+    function config($formatted_data, $opts) {
+        return [
+            'type' => 'bar',
+            'data' => $formatted_data,
+            'options' => $opts
+        ];
+    }
+
+    try {
+
+        $db = new PDO("sqlite:$GA_DB_PATH");
+        $res = $db -> query("select * from \"$table_name\" where type=\"$event_type\" and start>=\"$start\" and start<=\"$end\" order by start;");
+
+        $labels = [];
+        $public = [];
+        $academia = [];
+        $government = [];
+        $industry = [];
+        foreach ($res as $row) {
+
+            $labels[] = $row['start'];
+            $public[] = intval($row['public']);
+            $academia[] = intval($row['academia']);
+            $government[] = intval($row['government']);
+            $industry[] = intval($row['industry']);
+
+        }
+        $datasets = datasets($public, $academia, $government, $industry); 
+        $formatted_data =  format_data($labels, $datasets);
+        $opts = opts($event_type);
+        $config = config($formatted_data, $opts);
+
+        //$config = config(format_data($labels, datasets($data)), opts());
+
+    }
+    catch(PDOException $e) {
+        //$chart_data = ["message" => $e->getMessage()];
+        $config = ["message" => $e->getMessage()];
+    }
+
+    return $config;
+}
+
 function get_ga_data($request) {
     $metric = $request['metric'];
 
@@ -290,6 +383,15 @@ function get_ga_data($request) {
     else if ($metric == "followers") {
         $table = "followers";
         $data = followers_config($table, $start, $end); 
+    }
+
+    else if ($metric == "events") {
+        $table = "events";
+        $event_type = $request->get_param('type');
+        if (!$event_type) {
+            $event_type = 'hackathon';
+        }
+        $data = events_config($table, $event_type, $start, $end); 
     }
     else {
         $data = ['metric' => $metric];
