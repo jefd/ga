@@ -149,7 +149,7 @@ function users_country_config($table_name, $start, $end) {
     try {
 
         $db = new PDO("sqlite:$GA_DB_PATH");
-        $res = $db -> query("select * from \"$table_name\" order by count;");
+        $res = $db -> query("select * from \"$table_name\" order by count DESC;");
 
         $labels = [];
         $data = [];
