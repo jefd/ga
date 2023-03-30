@@ -94,6 +94,87 @@ function new_users_config($table_name, $start, $end) {
     return $config;
 }
 
+function users_country_config($table_name, $start, $end) {
+    global $GA_DB_PATH;
+
+    function datasets($data) {
+        $ds = [
+            'label' => 'Users by Country',
+            'data' => $data,
+            'backgroundColor' => [
+            'rgb(255, 99, 132)',
+            'rgb(54, 162, 235)',
+            'rgb(255, 205, 86)',
+            'rgb(255, 150, 86)',
+            'rgb(200, 150, 86)',
+            'rgb(100, 150, 86)',
+            '#0A4595',
+            '#0099D8',
+            '#D97200',
+            '#00A54F',
+            ],
+        ];
+
+        return [$ds];
+    }
+
+    function format_data($labels, $datasets)
+    {
+        $data = [
+            'labels' => $labels,
+            'datasets' => $datasets
+        ];
+        return $data;
+    }
+
+    function opts() {
+        $opts = [
+            'responsive' => true,
+            'plugins' => ['title' => ['display' => true, 'text' => 'Users by Country']],
+            //'maintainAspectRatio': false,
+        ];
+
+        return $opts;
+
+    }
+
+    function config($formatted_data, $opts) {
+        return [
+            'type' => 'doughnut',
+            'data' => $formatted_data,
+            'options' => $opts
+        ];
+    }
+
+    try {
+
+        $db = new PDO("sqlite:$GA_DB_PATH");
+        $res = $db -> query("select * from \"$table_name\" order by count;");
+
+        $labels = [];
+        $data = [];
+        foreach ($res as $row) {
+
+            $labels[] = $row['country'];
+            $data[] = intval($row['count']);
+
+        }
+        $datasets = datasets($data); 
+        $formatted_data =  format_data($labels, $datasets);
+        $opts = opts();
+        $config = config($formatted_data, $opts);
+
+        //$config = config(format_data($labels, datasets($data)), opts());
+
+    }
+    catch(PDOException $e) {
+        //$chart_data = ["message" => $e->getMessage()];
+        $config = ["message" => $e->getMessage()];
+    }
+
+    return $config;
+}
+
 function get_ga_data($request) {
     $metric = $request['metric'];
 
@@ -115,6 +196,10 @@ function get_ga_data($request) {
     if ($metric == "new_users") {
         $table = "new_users";
         $data = new_users_config($table, $start, $end); 
+    }
+    else if ($metric == "users_country") {
+        $table = "users_country";
+        $data = users_country_config($table, $start, $end); 
     }
     else {
         $data = ['metric' => $metric];

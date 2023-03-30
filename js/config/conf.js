@@ -26,7 +26,7 @@ function get_new_users_config() {
             label: 'New Users',
             data: pruned_data,
             backgroundColor: '#0099D8',
-            borderWidth: 1
+            //borderWidth: 1
         }]
     };
 
@@ -153,7 +153,7 @@ function get_users_country_config() {
           '#D97200',
           '#00A54F',
         ],
-        hoverOffset: 4
+        //hoverOffset: 4
       }]
     };
 
