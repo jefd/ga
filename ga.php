@@ -190,6 +190,7 @@ function users_country_config($table_name, $start, $end) {
     function config($formatted_data, $opts) {
         return [
             'type' => 'doughnut',
+            //'type' => 'bar',
             'data' => $formatted_data,
             'options' => $opts
         ];
@@ -412,8 +413,8 @@ function get_ga_data($request) {
 
 
     /****************** Testing Only ********************/
-    $start = '2022-01-25';
-    $end = '2023-03-30';
+    //$start = '2022-01-25';
+    //$end = '2023-03-30';
     /****************** Testing Only ********************/
 
     if (!$start)
