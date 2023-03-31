@@ -1,6 +1,8 @@
 //const BASE_URL =  "https://epic.noaa.gov";
-//const BASE_URL =  "https://rayv-webix4.jpl.nasa.gov/devel/ep";
-const BASE_URL =  "";
+const BASE_URL =  "https://rayv-webix4.jpl.nasa.gov/devel/ep";
+//const BASE_URL =  "";
+const TEST_URL = "https://jsonplaceholder.typicode.com/todos/1";
+
 const API_PATH = "/wp-json/ga/v1";
 
 const INITIAL_METRIC = 'new_users';
@@ -51,14 +53,34 @@ function Dash(initialVnode) {
 
     }
 
+	function updateData(url) {
+        model.loaded = false;
+		headers = {};
+		console.log("**** sending request **** " + url)
+		return m.request({
+			method: "GET",
+			url: url,
+			headers: headers,
+		})
+		.then(function(data){
+            model.chart_config = data
+            //model.chart_config = MOCK[model.metric]();
+            model.loaded = true;
+            console.log("**** RESPONSE **** ", data);
+		})
+        .catch(function(e) {
+            model.error = "Error loading data";
+        })
+	}
+
     function initData() {
-		model.chart_config = MOCK[model.metric]();
+        let url = getUrl();
+        updateData(url);
     }
 
     function metricCallback(e) {
         //e.redraw = false;
         model.selectedMetric = e.target.value;
-        console.log('selected metric = ' + model.selectedMetric)
     }
 
     function submitCallback(e) {
@@ -67,8 +89,6 @@ function Dash(initialVnode) {
         model.chart.destroy();
         model.chart = null;
         model.metric = model.selectedMetric;
-        console.log('metric = ' + model.metric);
-        console.log('url = ' + getUrl());
         //model.chart.update();
 
         // Date sanity checks
@@ -82,10 +102,9 @@ function Dash(initialVnode) {
             model.startDate = DEFAULT_START_DATE;
             model.endDate = DEFAULT_END_DATE;
         }
-        console.log('model.startDate = ' + model.startDate);
-        console.log('model.endDate = ' + model.endDate);
 
-        model.chart_config = MOCK[model.metric]();
+        let url = getUrl();
+        updateData(url);
     }
 
     function startDateCallback(e) {
@@ -95,9 +114,6 @@ function Dash(initialVnode) {
         model.startDate = e.target.value;
         if (! model.startDate )
             model.startDate = DEFAULT_START_DATE;
-        
-        console.log('model.startDate = ' + model.startDate);
-        
     }
 
     function endDateCallback(e) {
@@ -106,15 +122,21 @@ function Dash(initialVnode) {
         model.endDate = e.target.value;
         if (! model.endDate )
             model.endDate = DEFAULT_END_DATE;
-
-        console.log('model.endDate = ' + model.endDate);
     }
 
     /************************** View Functions ***********************/
     function selectView(id, name,  lst, callback) {
 
+        /*
         let opts = lst.map(function(option) {
             return m("option", {value: option.name}, option.title);
+        });
+        */
+        let opts = lst.map(function(option) {
+            if (option.name === model.selectedMetric)
+                return m("option", {value: option.name, selected: true}, option.title);
+            else
+                return m("option", {value: option.name}, option.title);
         });
 
         return m("select", {id: id, name: name, onchange: callback}, opts);
@@ -157,6 +179,10 @@ function Dash(initialVnode) {
 
 
     function view(vnode) {
+
+        if (! model.loaded) {
+            return m('div.loader');
+        }
 
         let metricLabel = m("label", {for: 'metric-select'}, "Metric");
         let metricSelect = selectView('metric-select', 'metric-select', METRICS, metricCallback);
