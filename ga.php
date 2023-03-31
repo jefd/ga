@@ -5,6 +5,8 @@ $VERSION = 'v1.0.0';
 
 $GA_DB_PATH = dirname(__FILE__) . '/ga.db';
 
+$DECIMATION = 15;
+
 
 /************************************* Constants *******************************************/
 // map of event types to titles
@@ -37,6 +39,34 @@ add_action('rest_api_init', function () {
     ));
 });
 
+
+function accumulate($data) {
+    $d = [];
+    $acc = 0;
+    foreach($data as $value) {
+        $acc += $value;
+        $d[] = $acc;
+    }
+    return $d;
+
+}
+
+function prune($labels, $data) {
+    global $DECIMATION;
+
+    $pruned_labels = [];
+    $pruned_data = [];
+
+    foreach ($labels as $idx => $value) {
+        if ($idx % $DECIMATION === 0) {
+            $pruned_labels[] = $value;
+            $pruned_data[] = $data[$idx];
+        }
+    }
+
+    return [$pruned_labels, $pruned_data];
+
+}
 
 function new_users_config($table_name, $start, $end) {
     global $GA_DB_PATH;
@@ -92,8 +122,15 @@ function new_users_config($table_name, $start, $end) {
             $data[] = intval($row['count']);
 
         }
-        $datasets = datasets($data); 
-        $formatted_data =  format_data($labels, $datasets);
+
+        $accumulated_data = accumulate($data);
+        $pruned = prune($labels, $accumulated_data);
+        
+        $pruned_labels = $pruned[0];
+        $pruned_data = $pruned[1];
+
+        $datasets = datasets($pruned_data); 
+        $formatted_data =  format_data($pruned_labels, $datasets);
         $opts = opts();
         $config = config($formatted_data, $opts);
 
