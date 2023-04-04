@@ -414,7 +414,7 @@ function gh_events_config($start, $end) {
         $ds = [];
 
         $ds[] = ['type' => 'bar',
-                 'label' => 'Events',
+                 'label' => 'Event Participants (x10)',
                  'data' => $ev_values,
                  'backgroundColor' => '#0A4595',
                  'order' => 1,
