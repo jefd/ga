@@ -17,6 +17,7 @@ const METRICS = [
     {name: 'hackathon', type: 'event', title: 'Hackathon Participants'}, 
     {name: 'codesprint', type: 'event', title: 'Code Sprint Participants'}, 
     {name: 'codefest', type: 'event', title: 'Code Fest Participants'}, 
+    {name: 'mixed', type: 'mixed', title: 'mixed'}, 
 ];
 
 function Dash(initialVnode) {
@@ -47,6 +48,10 @@ function Dash(initialVnode) {
         if (current_metric['type'] === 'event') {
             return `${BASE_URL}${API_PATH}/events/?start=${model.startDate}&end=${model.endDate}&type=${model.metric}`;
         }
+        else if (current_metric['type'] === 'mixed')
+            //return `${BASE_URL}${API_PATH}/ghe/`;
+            return `${BASE_URL}${API_PATH}/ghe/?start=${model.startDate}&end=${model.endDate}`;
+
         else {
             return `${BASE_URL}${API_PATH}/${model.metric}/?start=${model.startDate}&end=${model.endDate}`;
         }

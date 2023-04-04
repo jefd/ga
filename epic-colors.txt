@@ -1,6 +1,6 @@
 Epic Colors 
-#0A4595
-#0099D8
-#D97200
-#00A54F
+dark blue: #0A4595
+light blue: #0099D8
+brown: #D97200
+green: #00A54F
 

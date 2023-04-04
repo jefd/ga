@@ -4,6 +4,7 @@ $VERSION = 'v1.0.0';
 
 
 $GA_DB_PATH = dirname(__FILE__) . '/ga.db';
+$GH_DB_PATH = dirname(__FILE__) . '/metrics.db';
 
 $DECIMATION = 15;
 
@@ -405,6 +406,150 @@ function events_config($table_name, $event_type, $start, $end) {
     return $config;
 }
 
+function gh_events_config($start, $end) {
+    global $GA_DB_PATH;
+    global $GH_DB_PATH;
+
+    function datasets($ev_values, $gh_values) {
+        $ds = [];
+
+        $ds[] = ['type' => 'bar',
+                 'label' => 'Events',
+                 'data' => $ev_values,
+                 'backgroundColor' => '#0A4595',
+                 'order' => 1,
+                ];
+
+        $ds[] = ['type' => 'line',
+                 'tension' => 0.4,
+                 'label' => 'UFS Weather Model Repository Views',
+                 'data' => $gh_values,
+                 'borderColor' => '#00A54F',
+                 'backgroundColor' => '#00A54F',
+                 'order' => 0,
+
+                ];
+
+
+        return $ds;
+    }
+
+    function format_data($labels, $datasets)
+    {
+        $data = [
+            'labels' => $labels,
+            'datasets' => $datasets
+        ];
+        return $data;
+    }
+
+    function opts() {
+        $opts = [
+            'responsive' => true,
+            'plugins' => ['title' => ['display' => true, 'text' => 'GitHub/Events']],
+            'indexAxis' => 'x',
+        ];
+
+
+        return $opts;
+
+    }
+
+    function config($formatted_data, $opts) {
+        return [
+            'data' => $formatted_data,
+            'options' => $opts
+        ];
+    }
+
+    try {
+        // events data
+        $db = new PDO("sqlite:$GA_DB_PATH");
+        $res = $db -> query("select * from events;");
+        //$res = $db -> query("select * from events where start>=\"$start\" and start<=\"$end\" order by start;");
+
+        $ev_labels = [];
+        $ev_names = [];
+        $ev_values = [];
+
+        foreach ($res as $row) {
+            
+            $ev_names[] = $row['name'];
+            $ev_labels[] = $row['start'];
+
+            $public = intval($row['public']);
+            $academia = intval($row['academia']);
+            $government = intval($row['government']);
+            $industry = intval($row['industry']);
+
+            //$ev_values[] = $public + $academia + $government + $industry;
+            $ev_values[] = ($public + $academia + $government + $industry)*10;
+            //$ev_values[] = 608;
+
+        }
+
+        // github views
+        $db = new PDO("sqlite:$GH_DB_PATH");
+        //$start .= 'T00:00:00Z'; $end .= 'T00:00:00Z';
+        $start = $ev_labels[0];
+        $end = $ev_labels[count($ev_labels)-1];
+        $start .= 'T00:00:00Z'; $end .= 'T00:00:00Z';
+
+        $res = $db -> query("select * from \"ufs-community/ufs-weather-model/views\" where timestamp>=\"$start\" and timestamp<=\"$end\" order by timestamp;");
+
+        $gh_labels = [];
+        $gh_values = [];
+        foreach ($res as $row) {
+            
+            $gh_labels[] = substr($row['timestamp'], 0, 10);
+            $gh_values[] = $row['count'];
+
+        }
+
+        // map of dates to event names
+        $ev_labels_map = [];
+        foreach($ev_labels as $idx => $lab) {
+            $ev_labels_map[$lab] = [$ev_names[$idx], $ev_values[$idx]]; 
+        }
+
+        // Add event names to labels on dates where events occurred 
+        $labels = [];
+        foreach($gh_labels as $idx => $lab) {
+            if (array_key_exists($lab, $ev_labels_map)) {
+                $labels[] = $lab . ' - ' . $ev_labels_map[$lab][0];
+            }
+            else {
+                $labels[] = $lab;
+            }
+
+        }
+
+        $new_ev_values = [];
+        foreach($gh_labels as $idx => $lab) {
+            if (array_key_exists($lab, $ev_labels_map)) {
+                $new_ev_values[] = $ev_labels_map[$lab][1];
+            }
+            else {
+                $new_ev_values[] = 0;
+            }
+
+        }
+
+
+        $datasets = datasets($new_ev_values, $gh_values); 
+        $formatted_data =  format_data($labels, $datasets);
+        $opts = opts();
+        $config = config($formatted_data, $opts);
+
+    }
+    catch(PDOException $e) {
+        //$chart_data = ["message" => $e->getMessage()];
+        $config = ["message" => $e->getMessage()];
+    }
+
+    return $config;
+}
+
 function get_ga_data($request) {
     $metric = $request['metric'];
 
@@ -443,6 +588,9 @@ function get_ga_data($request) {
             $event_type = 'hackathon';
         }
         $data = events_config($table, $event_type, $start, $end); 
+    }
+    else if ($metric == "ghe") {
+        $data = gh_events_config($start, $end); 
     }
     else {
         $data = ['metric' => $metric];
