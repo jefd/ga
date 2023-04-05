@@ -414,7 +414,7 @@ function gh_events_config($start, $end) {
         $ds = [];
 
         $ds[] = ['type' => 'bar',
-                 'label' => 'Event Participants (x10)',
+                 'label' => 'Event Participants',
                  'data' => $ev_values,
                  'backgroundColor' => '#0A4595',
                  'order' => 1,
@@ -448,6 +448,7 @@ function gh_events_config($start, $end) {
             'responsive' => true,
             'plugins' => ['title' => ['display' => true, 'text' => 'GitHub/Events']],
             'indexAxis' => 'x',
+            'scales' => ['y' => ['type' => 'logarithmic']],
         ];
 
 
@@ -482,9 +483,7 @@ function gh_events_config($start, $end) {
             $government = intval($row['government']);
             $industry = intval($row['industry']);
 
-            //$ev_values[] = $public + $academia + $government + $industry;
-            $ev_values[] = ($public + $academia + $government + $industry)*10;
-            //$ev_values[] = 608;
+            $ev_values[] = $public + $academia + $government + $industry;
 
         }
 
