@@ -26,3 +26,12 @@ government integer not null,
 industry integer not null
 );
 
+CREATE TABLE if not exists page_views(
+timestamp text not null,
+count integer not null
+);
+
+CREATE TABLE if not exists twitter(
+timestamp text not null,
+impressions integer not null
+);

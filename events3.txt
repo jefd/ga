@@ -30,3 +30,14 @@ hackathon           (2022-11-14:2022-11-20)
 srw_codefest(?)     (2022-12-05:2022-12-09)
 
 srw_training(?)     (2022-12-16)
+
+
+hackathon codefest
+
+application training code sprint
+
+
+training application/testing  conferences/workshops
+
+
+

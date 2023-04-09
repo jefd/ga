@@ -417,6 +417,7 @@ function gh_events_config($start, $end) {
                  'label' => 'Event Participants',
                  'data' => $ev_values,
                  'backgroundColor' => '#0A4595',
+                 'borderRadius' => 10,
                  'order' => 1,
                 ];
 
@@ -549,6 +550,132 @@ function gh_events_config($start, $end) {
     return $config;
 }
 
+function impressions_config($start, $end) {
+    global $GA_DB_PATH;
+
+    function datasets($imp_values, $pv_values) {
+        $ds = [];
+
+        $ds[] = ['type' => 'bar',
+                 'label' => 'Twitter Impressions',
+                 'data' => $imp_values,
+                 'backgroundColor' => '#0A4595',
+                 'borderRadius' => 50,
+                 'order' => 1,
+                ];
+
+        $ds[] = ['type' => 'line',
+                 'tension' => 0.4,
+                 'label' => 'Epic Page Views',
+                 'data' => $pv_values,
+                 'borderColor' => '#00A54F',
+                 'backgroundColor' => '#00A54F',
+                 'order' => 0,
+
+                ];
+
+
+        return $ds;
+    }
+
+    function format_data($labels, $datasets)
+    {
+        $data = [
+            'labels' => $labels,
+            'datasets' => $datasets
+        ];
+        return $data;
+    }
+
+    function opts() {
+        $opts = [
+            'responsive' => true,
+            'plugins' => ['title' => ['display' => true, 'text' => 'Page Views/Impressions']],
+            'indexAxis' => 'x',
+            'scales' => ['y' => ['type' => 'logarithmic']],
+        ];
+
+        return $opts;
+
+    }
+
+    function config($formatted_data, $opts) {
+        return [
+            'data' => $formatted_data,
+            'options' => $opts
+        ];
+    }
+
+    try {
+        // impressions data
+        $db = new PDO("sqlite:$GA_DB_PATH");
+        //$res = $db -> query("select * from twitter;");
+        $res = $db -> query("select * from twitter where timestamp>=\"$start\" and timestamp<=\"$end\" order by timestamp;");
+        //$res = $db -> query("select * from events where start>=\"$start\" and start<=\"$end\" order by start;");
+
+        $imp_labels = [];
+        $imp_values = [];
+
+        foreach ($res as $row) {
+            
+            $imp_labels[] = $row['timestamp'];
+
+            $imp_values[] = intval($row['impressions']);
+
+        }
+
+
+        // page views
+        // $db = new PDO("sqlite:$GH_DB_PATH");
+        //$start .= 'T00:00:00Z'; $end .= 'T00:00:00Z';
+        $start = $imp_labels[0];
+        $end = $imp_labels[count($imp_labels)-1];
+
+        $res = $db -> query("select * from page_views where timestamp>=\"$start\" and timestamp<=\"$end\" order by timestamp;");
+        //$res = $db -> query("select * from \"ufs-community/ufs-weather-model/clones\" where timestamp>=\"$start\" and timestamp<=\"$end\" order by timestamp;");
+
+        $pv_labels = [];
+        $pv_values = [];
+        foreach ($res as $row) {
+            
+            $pv_labels[] = $row['timestamp'];
+            $pv_values[] = intval($row['count']);
+
+        }
+
+        // map of dates to impression values
+        $imp_labels_map = [];
+        foreach($imp_labels as $idx => $lab) {
+            $imp_labels_map[$lab] = $imp_values[$idx]; 
+        }
+
+
+        $new_imp_values = [];
+        foreach($pv_labels as $idx => $lab) {
+            if (array_key_exists($lab, $imp_labels_map)) {
+                $new_imp_values[] = $imp_labels_map[$lab];
+            }
+            else {
+                $new_imp_values[] = 0;
+            }
+
+        }
+
+
+        $datasets = datasets($new_imp_values, $pv_values); 
+        $formatted_data =  format_data($pv_labels, $datasets);
+        $opts = opts();
+        $config = config($formatted_data, $opts);
+
+    }
+    catch(PDOException $e) {
+        //$chart_data = ["message" => $e->getMessage()];
+        $config = ["message" => $e->getMessage()];
+    }
+
+    return $config;
+}
+
 function get_ga_data($request) {
     $metric = $request['metric'];
 
@@ -571,10 +698,12 @@ function get_ga_data($request) {
         $table = "new_users";
         $data = new_users_config($table, $start, $end); 
     }
+
     else if ($metric == "users_country") {
         $table = "users_country";
         $data = users_country_config($table, $start, $end); 
     }
+
     else if ($metric == "followers") {
         $table = "followers";
         $data = followers_config($table, $start, $end); 
@@ -588,9 +717,15 @@ function get_ga_data($request) {
         }
         $data = events_config($table, $event_type, $start, $end); 
     }
+
     else if ($metric == "ghe") {
         $data = gh_events_config($start, $end); 
     }
+
+    else if ($metric == "impressions") {
+        $data = impressions_config($start, $end); 
+    }
+
     else {
         $data = ['metric' => $metric];
         
