@@ -26,25 +26,30 @@ else
   echo "importing followers table"
   (echo .separator ,; echo .import ./followers_tmp.csv followers) | sqlite3 $DB
 
-  tail -n +2 ./events.csv > ./events_tmp.csv
-  echo "importing events table"
-  (echo .separator ,; echo .import ./events_tmp.csv events) | sqlite3 $DB
+  tail -n +2 ./event_type.csv > ./event_type_tmp.csv
+  echo "importing event_type table"
+  (echo .separator ,; echo .import ./event_type_tmp.csv event_type) | sqlite3 $DB
+
+  tail -n +2 ./event.csv > ./event_tmp.csv
+  echo "importing event table"
+  (echo .separator ,; echo .import ./event_tmp.csv event) | sqlite3 $DB
 
   tail -n +2 ./twitter-impressions.csv > ./twitter-impressions_tmp.csv
   echo "importing twitter table"
   (echo .separator ,; echo .import ./twitter-impressions_tmp.csv twitter) | sqlite3 $DB
 
-  tail -n +2 ./page_views_all.csv > ./page_views_all_tmp.csv
+  tail -n +2 ./page_views.csv > ./page_views_tmp.csv
   echo "importing page_views table"
-  (echo .separator ,; echo .import ./page_views_all_tmp.csv page_views) | sqlite3 $DB
+  (echo .separator ,; echo .import ./page_views_tmp.csv page_views) | sqlite3 $DB
 
   # remove temp files
   rm ./new_users_tmp.csv
   rm ./users_country_tmp.csv
   rm ./followers_tmp.csv
-  rm ./events_tmp.csv
+  rm ./event_type_tmp.csv
+  rm ./event_tmp.csv
   rm ./twitter-impressions_tmp.csv
-  rm ./page_views_all_tmp.csv
+  rm ./page_views_tmp.csv
 
 fi
 

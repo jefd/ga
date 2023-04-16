@@ -15,17 +15,6 @@ country text not null,
 count integer not null
 );
 
-CREATE TABLE if not exists events(
-type text not null,
-name text not null,
-start text not null,
-end text not null,
-public integer not null,
-academia integer not null,
-government integer not null,
-industry integer not null
-);
-
 CREATE TABLE if not exists page_views(
 timestamp text not null,
 count integer not null
@@ -35,3 +24,21 @@ CREATE TABLE if not exists twitter(
 timestamp text not null,
 impressions integer not null
 );
+
+CREATE TABLE if not exists event_type(
+id integer primary key autoincrement,
+name text not null
+);
+
+CREATE TABLE if not exists event(
+event_type_id integer not null,
+name text not null,
+start text not null,
+end text not null,
+public integer not null,
+academia integer not null,
+government integer not null,
+industry integer not null,
+foreign key (event_type_id) references event_type(id)
+);
+

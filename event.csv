@@ -1,0 +1,8 @@
+event_type_id,name,start,end,public,academia,government,industry
+2,Summer Code Sprint,2022-06-10,2022-06-10,1,9,8,1 
+1,Summer Hackathon,2022-06-13,2022-06-18,1,5,3,3
+2,Fall Code Sprint,2022-09-09,2022-09-09,2,2,0,2 
+1,Fall Hackathon,2022-09-06,2022-09-11,5,0,0,1
+2,Winter Code Sprint,2022-11-18,2022-11-18,3,14,2,0 
+1,Winter Hackathon,2022-11-14,2022-11-20,0,13,1,1
+3,Winter SRW Codefest,2022-12-05,2022-12-09,0,3,2,1
