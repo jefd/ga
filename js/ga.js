@@ -14,12 +14,18 @@ const METRICS = [
     {name: 'new_users', type: 'web', title: 'New Users'}, 
     {name: 'users_country', type: 'web', title: 'Users By Country'}, 
     {name: 'followers', type: 'social', title: 'Social Media Followers'}, 
-    {name: 'hackathon', type: 'event', title: 'Hackathon Participants'}, 
-    {name: 'codesprint', type: 'event', title: 'Code Sprint Participants'}, 
-    {name: 'codefest', type: 'event', title: 'Code Fest Participants'}, 
+    {name: 'hackathon', id: 1, type: 'event', title: 'Hackathon Participants'}, 
+    {name: 'codesprint', id: 2, type: 'event', title: 'Code Sprint Participants'}, 
+    {name: 'codefest', id: 3, type: 'event', title: 'Code Fest Participants'}, 
     {name: 'mixed', type: 'mixed', title: 'Events / GitHub Views'}, 
     {name: 'impressions', type: 'imp', title: 'Twitter Impressions / Page Views'}, 
     {name: 'all', type: 'all', title: 'All'}, 
+];
+
+const EVENTS = [
+    {id: 1, name: "Hackathon"},
+    {id: 2, name: "Code Sprint"},
+    {id: 3, name: "Code Fest"},
 ];
 
 function Dash(initialVnode) {
@@ -48,7 +54,10 @@ function Dash(initialVnode) {
         let current_metric = get_metric(model.metric);
 
         if (current_metric['type'] === 'event') {
-            return `${BASE_URL}${API_PATH}/events/?start=${model.startDate}&end=${model.endDate}&type=${model.metric}`;
+            const event_id = current_metric['id'];
+
+            //return `${BASE_URL}${API_PATH}/events/?start=${model.startDate}&end=${model.endDate}&type=${model.metric}`;
+            return `${BASE_URL}${API_PATH}/events/${event_id}/?start=${model.startDate}&end=${model.endDate}`;
         }
         else if (current_metric['type'] === 'mixed')
             //return `${BASE_URL}${API_PATH}/ghe/`;

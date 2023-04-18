@@ -26,8 +26,8 @@ impressions integer not null
 );
 
 CREATE TABLE if not exists event_type(
-id integer primary key autoincrement,
-name text not null
+type_id integer primary key autoincrement,
+type_name text not null
 );
 
 CREATE TABLE if not exists event(
@@ -39,6 +39,6 @@ public integer not null,
 academia integer not null,
 government integer not null,
 industry integer not null,
-foreign key (event_type_id) references event_type(id)
+foreign key (event_type_id) references event_type(type_id)
 );
 

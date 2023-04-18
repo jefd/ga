@@ -33,12 +33,159 @@ function ga_dash_board($atts) {
 }
 
 
+
+add_action('rest_api_init', function () {
+    register_rest_route( 'ga/v1', '/event-types',array(
+        'methods'  => 'GET',
+        'callback' => 'get_event_types'
+    ));
+});
+
+add_action('rest_api_init', function () {
+    register_rest_route( 'ga/v1', '/events',array(
+        'methods'  => 'GET',
+        'callback' => 'get_all_events'
+    ));
+});
+
+add_action('rest_api_init', function () {
+    register_rest_route('ga/v1', '/events/(?P<id>\d+)', array(
+        'methods' => 'GET',
+        'callback' => 'get_events',
+    ));
+});
+
+
+
 add_action('rest_api_init', function () {
     register_rest_route( 'ga/v1', '/(?P<metric>[a-z-_]+)',array(
         'methods'  => 'GET',
         'callback' => 'get_ga_data'
     ));
 });
+
+function query_events($q) {
+    global $GA_DB_PATH;
+    try {
+        $db = new PDO("sqlite:$GA_DB_PATH");
+
+        $res = $db -> query($q);
+
+        $lst = [];
+        foreach ($res as $row) {
+            $o = Array();
+
+            $o['event_type_name'] = $row['type_name'];
+            $o['name'] = $row['name'];
+            $o['start'] = $row['start'];
+            $o['end'] = $row['end'];
+            $o['public'] = $row['public'];
+            $o['academia'] = $row['academia'];
+            $o['government'] = $row['government'];
+            $o['industry'] = $row['industry'];
+
+            $lst[] = $o;
+
+        }
+        
+        $response = new WP_REST_Response($lst);
+        $response->set_status(200);
+
+        return $response;
+
+    }
+    catch(PDOException $e) {
+        return new WP_Error( 'error', $e->getMessage(), array('status' => 404) );
+    }
+}
+
+function get_events($request) {
+    global $GA_DB_PATH;
+
+    $start = $request->get_param('start');
+    $end = $request->get_param('end');
+
+    if (!$start)
+        $start = '1970-01-01';
+
+    if (!$end) 
+        $end = '2050-01-01';
+
+    $event_type_id = intval($request['id']);
+
+    $q = <<<QUERY
+    select event_type.type_name, event.name, event.start, event.end, 
+    event.public, event.academia, event.government, event.industry 
+    from event 
+    inner join event_type 
+    on event_type.type_id = event.event_type_id 
+    and 
+    event_type.type_id = $event_type_id 
+    where event.start >= "$start" and event.end <= "$end"
+    order by start;
+    QUERY;
+
+    return query_events($q);
+
+}
+
+function get_all_events($request) {
+    global $GA_DB_PATH;
+
+    $start = $request->get_param('start');
+    $end = $request->get_param('end');
+
+    if (!$start)
+        $start = '1970-01-01';
+
+    if (!$end) 
+        $end = '2050-01-01';
+
+    $q = <<<QUERY
+    select event_type.type_name, event.name, event.start, event.end, 
+    event.public, event.academia, event.government, event.industry 
+    from event 
+    inner join event_type 
+    on event_type.type_id = event.event_type_id 
+    where event.start >= "$start" and event.end <= "$end"
+    order by start;
+    QUERY;
+
+    return query_events($q);
+
+}
+
+function get_event_types($response) {
+    global $GA_DB_PATH;
+
+    try {
+        $db = new PDO("sqlite:$GA_DB_PATH");
+
+        $res = $db -> query('select * from event_type order by type_id;');
+
+        $lst = [];
+        foreach ($res as $row) {
+
+            $o = Array();
+
+            $o['id'] = intval($row['type_id']);
+            $o['name'] = $row['type_name'];
+
+            $lst[] = $o;
+
+        }
+
+        $response = new WP_REST_Response($lst);
+        $response->set_status(200);
+
+        return $response;
+
+    }
+    catch(PDOException $e) {
+        return new WP_Error( 'error', $e->getMessage(), array('status' => 404) );
+    }
+    
+}
 
 
 function accumulate($data) {
