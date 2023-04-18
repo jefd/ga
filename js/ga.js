@@ -17,8 +17,9 @@ const METRICS = [
     {name: 'hackathon', type: 'event', title: 'Hackathon Participants'}, 
     {name: 'codesprint', type: 'event', title: 'Code Sprint Participants'}, 
     {name: 'codefest', type: 'event', title: 'Code Fest Participants'}, 
-    {name: 'mixed', type: 'mixed', title: 'mixed'}, 
-    {name: 'impressions', type: 'imp', title: 'Twitter Impressions/ Page Views'}, 
+    {name: 'mixed', type: 'mixed', title: 'Events / GitHub Views'}, 
+    {name: 'impressions', type: 'imp', title: 'Twitter Impressions / Page Views'}, 
+    {name: 'all', type: 'all', title: 'All'}, 
 ];
 
 function Dash(initialVnode) {
@@ -56,6 +57,10 @@ function Dash(initialVnode) {
         else if (current_metric['type'] === 'imp')
             //return `${BASE_URL}${API_PATH}/ghe/`;
             return `${BASE_URL}${API_PATH}/impressions/?start=${model.startDate}&end=${model.endDate}`;
+
+        else if (current_metric['type'] === 'all')
+            //return `${BASE_URL}${API_PATH}/ghe/`;
+            return `${BASE_URL}${API_PATH}/all/?start=${model.startDate}&end=${model.endDate}`;
 
         else {
             return `${BASE_URL}${API_PATH}/${model.metric}/?start=${model.startDate}&end=${model.endDate}`;
@@ -100,6 +105,14 @@ function Dash(initialVnode) {
         model.chart = null;
         model.metric = model.selectedMetric;
         //model.chart.update();
+        //
+        if (! model.startDate )
+            model.startDate = DEFAULT_START_DATE;
+
+        if (! model.endDate )
+            model.endDate = DEFAULT_END_DATE;
+
+         
 
         // Date sanity checks
         if (model.startDate < DEFAULT_START_DATE)
@@ -122,16 +135,16 @@ function Dash(initialVnode) {
         //model.chart.destroy();
         //model.showDLink = false;
         model.startDate = e.target.value;
-        if (! model.startDate )
-            model.startDate = DEFAULT_START_DATE;
+        //if (! model.startDate )
+        //    model.startDate = DEFAULT_START_DATE;
     }
 
     function endDateCallback(e) {
         //model.chart.destroy();
         //model.showDLink = false;
         model.endDate = e.target.value;
-        if (! model.endDate )
-            model.endDate = DEFAULT_END_DATE;
+        //if (! model.endDate )
+        //    model.endDate = DEFAULT_END_DATE;
     }
 
     /************************** View Functions ***********************/

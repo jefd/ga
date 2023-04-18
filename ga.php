@@ -632,7 +632,6 @@ function impressions_config($start, $end) {
         $end = $imp_labels[count($imp_labels)-1];
 
         $res = $db -> query("select * from page_views where timestamp>=\"$start\" and timestamp<=\"$end\" order by timestamp;");
-        //$res = $db -> query("select * from \"ufs-community/ufs-weather-model/clones\" where timestamp>=\"$start\" and timestamp<=\"$end\" order by timestamp;");
 
         $pv_labels = [];
         $pv_values = [];
@@ -674,6 +673,247 @@ function impressions_config($start, $end) {
     }
 
     return $config;
+}
+
+function all_config($start, $end) {
+    global $GA_DB_PATH;
+    global $GH_DB_PATH;
+
+    function datasets($ev_values, $imp_values, $pv_values, $ghv_values, $ghc_values) {
+    //$datasets = datasets($new_ev_values, $new_imp_values, $pv_values, $ghv_values, $ghc_values); 
+    
+        $ds = [];
+
+        $ds[] = ['type' => 'bar',
+                 'label' => 'Event Participants',
+                 'data' => $ev_values,
+                 'backgroundColor' => '#f1c232',
+                 'borderRadius' => 10,
+                 'order' => 1,
+                ];
+
+        $ds[] = ['type' => 'bar',
+                 'label' => 'Twitter Impressions',
+                 'data' => $imp_values,
+                 'backgroundColor' => '#6983CE',
+                 'borderRadius' => 50,
+                 'order' => 1,
+                ];
+
+        $ds[] = ['type' => 'line',
+                 'tension' => 0.4,
+                 'label' => 'Epic Page Views',
+                 'data' => $pv_values,
+                 'borderColor' => '#00A54F',
+                 'backgroundColor' => '#00A54F',
+                 'order' => 0,
+
+                ];
+
+        $ds[] = ['type' => 'line',
+                 'tension' => 0.4,
+                 'label' => 'UFS Weather Model Repository Views',
+                 'data' => $ghv_values,
+                 'borderColor' => '#3B7877',
+                 'backgroundColor' => '#3B7877',
+                 'order' => 0,
+
+                ];
+
+        $ds[] = ['type' => 'line',
+                 'tension' => 0.4,
+                 'label' => 'UFS Weather Model Repository Clones',
+                 'data' => $ghc_values,
+                 'borderColor' => '#FF0000',
+                 'backgroundColor' => '#FF0000',
+                 'order' => 0,
+
+                ];
+
+
+        return $ds;
+    }
+
+    function format_data($labels, $datasets)
+    {
+        $data = [
+            'labels' => $labels,
+            'datasets' => $datasets
+        ];
+        return $data;
+    }
+
+    function opts() {
+        $opts = [
+            'responsive' => true,
+            'plugins' => ['title' => ['display' => true, 'text' => 'All']],
+            'indexAxis' => 'x',
+            'scales' => ['y' => ['type' => 'logarithmic']],
+        ];
+
+
+        return $opts;
+
+    }
+
+    function config($formatted_data, $opts) {
+        return [
+            'data' => $formatted_data,
+            'options' => $opts
+        ];
+    }
+
+    try {
+        // events data
+        $db = new PDO("sqlite:$GA_DB_PATH");
+        $res = $db -> query("select * from events;");
+        //$res = $db -> query("select * from events where start>=\"$start\" and start<=\"$end\" order by start;");
+
+        $ev_labels = [];
+        $ev_names = [];
+        $ev_values = [];
+
+        foreach ($res as $row) {
+            
+            $ev_names[] = $row['name'];
+            $ev_labels[] = $row['start'];
+
+            $public = intval($row['public']);
+            $academia = intval($row['academia']);
+            $government = intval($row['government']);
+            $industry = intval($row['industry']);
+
+            $ev_values[] = $public + $academia + $government + $industry;
+
+        }
+
+        // impressions data
+        //$db = new PDO("sqlite:$GA_DB_PATH");
+        //$res = $db -> query("select * from twitter;");
+        $res = $db -> query("select * from twitter where timestamp>=\"$start\" and timestamp<=\"$end\" order by timestamp;");
+        //$res = $db -> query("select * from events where start>=\"$start\" and start<=\"$end\" order by start;");
+
+        $imp_labels = [];
+        $imp_values = [];
+
+        foreach ($res as $row) {
+            
+            $imp_labels[] = $row['timestamp'];
+
+            $imp_values[] = intval($row['impressions']);
+
+        }
+
+        $start = min($ev_labels[0], $imp_labels[0]);
+        $end = max($ev_labels[count($ev_labels)-1], $imp_labels[count($imp_labels)-1]);
+
+        // page views
+        $res = $db -> query("select * from page_views where timestamp>=\"$start\" and timestamp<=\"$end\" order by timestamp;");
+
+        $pv_labels = [];
+        $pv_values = [];
+        foreach ($res as $row) {
+            
+            $pv_labels[] = $row['timestamp'];
+            $pv_values[] = intval($row['count']);
+
+        }
+
+        // github views
+        $db = new PDO("sqlite:$GH_DB_PATH");
+
+        //$start = min($ev_labels[0], $imp_labels[0]);
+        //$end = max($ev_labels[count($ev_labels)-1], $imp_labels[count($imp_labels)-1]);
+        $start .= 'T00:00:00Z'; $end .= 'T00:00:00Z';
+
+        $res = $db -> query("select * from \"ufs-community/ufs-weather-model/views\" where timestamp>=\"$start\" and timestamp<=\"$end\" order by timestamp;");
+
+        $ghv_labels = [];
+        $ghv_values = [];
+        foreach ($res as $row) {
+            
+            $ghv_labels[] = substr($row['timestamp'], 0, 10);
+            $ghv_values[] = $row['count'];
+
+        }
+
+        // github clones 
+        //$db = new PDO("sqlite:$GH_DB_PATH");
+
+        $res = $db -> query("select * from \"ufs-community/ufs-weather-model/clones\" where timestamp>=\"$start\" and timestamp<=\"$end\" order by timestamp;");
+
+        $ghc_labels = [];
+        $ghc_values = [];
+        foreach ($res as $row) {
+            
+            $ghc_labels[] = substr($row['timestamp'], 0, 10);
+            $ghc_values[] = $row['count'];
+
+        }
+
+
+        // map of dates to [event_names, event_values]
+        $ev_labels_map = [];
+        foreach($ev_labels as $idx => $lab) {
+            $ev_labels_map[$lab] = [$ev_names[$idx], $ev_values[$idx]]; 
+        }
+
+        // map of dates to impression values
+        $imp_labels_map = [];
+        foreach($imp_labels as $idx => $lab) {
+            $imp_labels_map[$lab] = $imp_values[$idx]; 
+        }
+
+        // Set event values to zero on dates where there are none
+        $new_ev_values = [];
+        foreach($pv_labels as $idx => $lab) {
+            if (array_key_exists($lab, $ev_labels_map)) {
+                $new_ev_values[] = $ev_labels_map[$lab][1];
+            }
+            else {
+                $new_ev_values[] = 0;
+            }
+
+        }
+
+        // Set impression values to zero on dates where there are none
+        $new_imp_values = [];
+        foreach($pv_labels as $idx => $lab) {
+            if (array_key_exists($lab, $imp_labels_map)) {
+                $new_imp_values[] = $imp_labels_map[$lab];
+            }
+            else {
+                $new_imp_values[] = 0;
+            }
+
+        }
+
+        // Add event names to labels on dates where events occurred 
+        $labels = [];
+        foreach($pv_labels as $idx => $lab) {
+            if (array_key_exists($lab, $ev_labels_map)) {
+                $labels[] = $lab . ' - ' . $ev_labels_map[$lab][0];
+            }
+            else {
+                $labels[] = $lab;
+            }
+
+        }
+
+        //$datasets = datasets($new_ev_values, $gh_values); 
+        $datasets = datasets($new_ev_values, $new_imp_values, $pv_values, $ghv_values, $ghc_values); 
+        $formatted_data =  format_data($labels, $datasets);
+        $opts = opts();
+        $config = config($formatted_data, $opts);
+
+    }
+    catch(PDOException $e) {
+        //$chart_data = ["message" => $e->getMessage()];
+        $config = ["message" => $e->getMessage()];
+    }
+
+    return $config;
+
 }
 
 function get_ga_data($request) {
@@ -724,6 +964,10 @@ function get_ga_data($request) {
 
     else if ($metric == "impressions") {
         $data = impressions_config($start, $end); 
+    }
+
+    else if ($metric == "all") {
+        $data = all_config($start, $end); 
     }
 
     else {
