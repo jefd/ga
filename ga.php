@@ -569,7 +569,7 @@ function gh_events_config($start, $end) {
                  'label' => 'Event Participants',
                  'data' => $ev_values,
                  'backgroundColor' => '#0A4595',
-                 'borderRadius' => 10,
+                 'borderRadius' => 50,
                  'order' => 1,
                 ];
 
@@ -841,7 +841,7 @@ function all_config($start, $end) {
                  'label' => 'Event Participants',
                  'data' => $ev_values,
                  'backgroundColor' => '#f1c232',
-                 'borderRadius' => 10,
+                 'borderRadius' => 50,
                  'order' => 1,
                 ];
 
