@@ -503,7 +503,7 @@ function events_config($event_type_id, $start, $end) {
     function opts($event_type_name) {
         $opts = [
             'responsive' => true,
-            'plugins' => ['title' => ['display' => true, 'text' => $event_type_name]],
+            'plugins' => ['title' => ['display' => true, 'text' => $event_type_name . ' Participants']],
             'indexAxis' => 'y',
             'scales' => ['x' => ['stacked' => true], 'y' => ['stacked' => true]],
         ];
@@ -542,9 +542,10 @@ function events_config($event_type_id, $start, $end) {
             $event_type_name = $row['type_name'];
 
         }
+
         $datasets = datasets($public, $academia, $government, $industry); 
         $formatted_data =  format_data($labels, $datasets);
-        $opts = opts($event_type_name . ' Participants');
+        $opts = opts($event_type_name);
         $config = config($formatted_data, $opts);
 
         //$config = config(format_data($labels, datasets($data)), opts());
