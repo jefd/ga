@@ -8,18 +8,6 @@ $GH_DB_PATH = dirname(__FILE__) . '/metrics.db';
 
 $DECIMATION = 15;
 
-
-/************************************* Constants *******************************************/
-// map of event types to titles
-$EVENTS = ["hackathon" => "Hackathon Participants",
-           "codesprint" => "Code Sprint Participants",
-           "codefest" => "Code Fest Participants",
-];
-
-/*******************************************************************************************/
-
-
-
 add_shortcode( 'ga', 'ga_dash_board');
 function ga_dash_board($atts) {
     global $VERSION;
@@ -40,22 +28,6 @@ add_action('rest_api_init', function () {
         'callback' => 'get_event_types'
     ));
 });
-
-add_action('rest_api_init', function () {
-    register_rest_route( 'ga/v1', '/events',array(
-        'methods'  => 'GET',
-        'callback' => 'get_all_events'
-    ));
-});
-
-add_action('rest_api_init', function () {
-    register_rest_route('ga/v1', '/events/(?P<id>\d+)', array(
-        'methods' => 'GET',
-        'callback' => 'get_events',
-    ));
-});
-
-
 
 add_action('rest_api_init', function () {
     register_rest_route( 'ga/v1', '/(?P<metric>[a-z-_]+)',array(
@@ -97,6 +69,37 @@ function query_events($q) {
     catch(PDOException $e) {
         return new WP_Error( 'error', $e->getMessage(), array('status' => 404) );
     }
+}
+
+function get_events_sql($start, $end, $event_type_id=null) {
+    if ($event_type_id) {
+        $q = <<<QUERY
+        select event_type.type_name, event.name, event.start, event.end, 
+        event.public, event.academia, event.government, event.industry 
+        from event 
+        inner join event_type 
+        on event_type.type_id = event.event_type_id 
+        and 
+        event_type.type_id = $event_type_id 
+        where event.start >= "$start" and event.end <= "$end"
+        order by start;
+        QUERY;
+    }
+    else {
+        $q = <<<QUERY
+        select event_type.type_name, event.name, event.start, event.end, 
+        event.public, event.academia, event.government, event.industry 
+        from event 
+        inner join event_type 
+        on event_type.type_id = event.event_type_id 
+        where event.start >= "$start" and event.end <= "$end"
+        order by start;
+        QUERY;
+    }
+
+    return $q;
+
+    
 }
 
 function get_events($request) {
@@ -459,7 +462,7 @@ function followers_config($table_name, $start, $end) {
     return $config;
 }
 
-function events_config($table_name, $event_type, $start, $end) {
+function events_config($event_type_id, $start, $end) {
     global $GA_DB_PATH;
 
     function datasets($gp, $ac, $gov, $ind) {
@@ -497,11 +500,10 @@ function events_config($table_name, $event_type, $start, $end) {
         return $data;
     }
 
-    function opts($event_type) {
-        global $EVENTS;
+    function opts($event_type_name) {
         $opts = [
             'responsive' => true,
-            'plugins' => ['title' => ['display' => true, 'text' => $EVENTS[$event_type]]],
+            'plugins' => ['title' => ['display' => true, 'text' => $event_type_name]],
             'indexAxis' => 'y',
             'scales' => ['x' => ['stacked' => true], 'y' => ['stacked' => true]],
         ];
@@ -521,7 +523,8 @@ function events_config($table_name, $event_type, $start, $end) {
     try {
 
         $db = new PDO("sqlite:$GA_DB_PATH");
-        $res = $db -> query("select * from \"$table_name\" where type=\"$event_type\" and start>=\"$start\" and start<=\"$end\" order by start;");
+        //$res = $db -> query("select * from \"$table_name\" where type=\"$event_type\" and start>=\"$start\" and start<=\"$end\" order by start;");
+        $res = $db -> query(get_events_sql($start, $end, $event_type_id));
 
         $labels = [];
         $public = [];
@@ -536,10 +539,12 @@ function events_config($table_name, $event_type, $start, $end) {
             $government[] = intval($row['government']);
             $industry[] = intval($row['industry']);
 
+            $event_type_name = $row['type_name'];
+
         }
         $datasets = datasets($public, $academia, $government, $industry); 
         $formatted_data =  format_data($labels, $datasets);
-        $opts = opts($event_type);
+        $opts = opts($event_type_name . ' Participants');
         $config = config($formatted_data, $opts);
 
         //$config = config(format_data($labels, datasets($data)), opts());
@@ -614,8 +619,9 @@ function gh_events_config($start, $end) {
     try {
         // events data
         $db = new PDO("sqlite:$GA_DB_PATH");
-        $res = $db -> query("select * from events;");
+        //$res = $db -> query("select * from events;");
         //$res = $db -> query("select * from events where start>=\"$start\" and start<=\"$end\" order by start;");
+        $res = $db -> query(get_events_sql($start, $end));
 
         $ev_labels = [];
         $ev_names = [];
@@ -913,8 +919,9 @@ function all_config($start, $end) {
     try {
         // events data
         $db = new PDO("sqlite:$GA_DB_PATH");
-        $res = $db -> query("select * from events;");
+        //$res = $db -> query("select * from events;");
         //$res = $db -> query("select * from events where start>=\"$start\" and start<=\"$end\" order by start;");
+        $res = $db -> query(get_events_sql($start, $end));
 
         $ev_labels = [];
         $ev_names = [];
@@ -951,8 +958,8 @@ function all_config($start, $end) {
 
         }
 
-        $start = min($ev_labels[0], $imp_labels[0]);
-        $end = max($ev_labels[count($ev_labels)-1], $imp_labels[count($imp_labels)-1]);
+        //$start = min($ev_labels[0], $imp_labels[0]);
+        //$end = max($ev_labels[count($ev_labels)-1], $imp_labels[count($imp_labels)-1]);
 
         // page views
         $res = $db -> query("select * from page_views where timestamp>=\"$start\" and timestamp<=\"$end\" order by timestamp;");
@@ -1097,12 +1104,12 @@ function get_ga_data($request) {
     }
 
     else if ($metric == "events") {
-        $table = "events";
-        $event_type = $request->get_param('type');
-        if (!$event_type) {
-            $event_type = 'hackathon';
+        $event_type_id = intval($request->get_param('type'));
+        if (!$event_type_id) {
+            $event_type_id = 1;
         }
-        $data = events_config($table, $event_type, $start, $end); 
+        $data = events_config($event_type_id, $start, $end); 
+        //$data = ['type' => $event_type_id, 'start' => $start, 'end' => $end];
     }
 
     else if ($metric == "ghe") {

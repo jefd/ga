@@ -56,8 +56,8 @@ function Dash(initialVnode) {
         if (current_metric['type'] === 'event') {
             const event_id = current_metric['id'];
 
-            //return `${BASE_URL}${API_PATH}/events/?start=${model.startDate}&end=${model.endDate}&type=${model.metric}`;
-            return `${BASE_URL}${API_PATH}/events/${event_id}/?start=${model.startDate}&end=${model.endDate}`;
+            return `${BASE_URL}${API_PATH}/events/?start=${model.startDate}&end=${model.endDate}&type=${model.metric}`;
+            //return `${BASE_URL}${API_PATH}/events/${event_id}/?start=${model.startDate}&end=${model.endDate}`;
         }
         else if (current_metric['type'] === 'mixed')
             //return `${BASE_URL}${API_PATH}/ghe/`;
