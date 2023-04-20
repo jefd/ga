@@ -227,6 +227,7 @@ function new_users_config($table_name, $start, $end) {
             'label' => 'New Users',
             'data' => $data,
             'backgroundColor' => '#0099D8',
+            'borderRadius' => 50,
             'borderWidth' => 1
         ];
 
@@ -245,8 +246,8 @@ function new_users_config($table_name, $start, $end) {
     function opts() {
         $opts = [
             'responsive' => true,
-            'indexAxis' => 'y',
-            'scales' => ['y' => ['beginAtZero' => true]],
+            'indexAxis' => 'x',
+            'scales' => ['x' => ['beginAtZero' => true]],
         ];
 
         return $opts;
@@ -385,16 +386,19 @@ function followers_config($table_name, $start, $end) {
         $ds[] = ['label' => 'Twitter',
                  'data' => $twitter,
                  'backgroundColor' => '#0099D8',
+                 'borderRadius' => 50,
                 ];
 
         $ds[] = ['label' => 'Instagram',
                  'data' => $ig,
                  'backgroundColor' => '#D97200',
+                 'borderRadius' => 50,
                 ];
 
         $ds[] = ['label' => 'Facebook',
                  'data' => $fb,
                  'backgroundColor' => '#00A54F',
+                 'borderRadius' => 50,
                 ];
 
         return $ds;
@@ -413,7 +417,7 @@ function followers_config($table_name, $start, $end) {
         $opts = [
             'responsive' => true,
             'plugins' => ['title' => ['display' => true, 'text' => 'Social Media Followers']],
-            'indexAxis' => 'y',
+            'indexAxis' => 'x',
             'scales' => ['x' => ['stacked' => true], 'y' => ['stacked' => true]],
         ];
 
@@ -471,21 +475,25 @@ function events_config($event_type_id, $start, $end) {
         $ds[] = ['label' => 'General Public',
                  'data' => $gp,
                  'backgroundColor' => '#0A4595',
+                 'borderRadius' => 50,
                 ];
 
         $ds[] = ['label' => 'Academia',
                  'data' => $ac,
                  'backgroundColor' => '#0099D8',
+                 'borderRadius' => 50,
                 ];
 
         $ds[] = ['label' => 'Government',
                  'data' => $gov,
                  'backgroundColor' => '#D97200',
+                 'borderRadius' => 50,
                 ];
 
         $ds[] = ['label' => 'Industry',
                  'data' => $ind,
                  'backgroundColor' => '#00A54F',
+                 'borderRadius' => 50,
                 ];
 
         return $ds;
@@ -504,7 +512,7 @@ function events_config($event_type_id, $start, $end) {
         $opts = [
             'responsive' => true,
             'plugins' => ['title' => ['display' => true, 'text' => $event_type_name . ' Participants']],
-            'indexAxis' => 'y',
+            'indexAxis' => 'x',
             'scales' => ['x' => ['stacked' => true], 'y' => ['stacked' => true]],
         ];
 
