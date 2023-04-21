@@ -36,6 +36,34 @@ add_action('rest_api_init', function () {
     ));
 });
 
+function new_labels($labels_list) {
+    $l = [];
+    foreach ($labels_list as $labels) {
+        foreach ($labels as $lab) {
+            if (! in_array($lab, $l)) 
+                $l[] = $lab;
+            
+        }
+    }
+    sort($l); 
+    return $l;
+}
+
+
+function new_data($new_labels, $labels, $data) {
+    $new_dat = [];
+    
+    foreach ($new_labels as $lab) {
+        $idx = array_search($lab, $labels);
+        if ($idx !== false)
+            $new_dat[] = $data[$idx];
+        else
+            $new_dat[] = 0;
+
+    }
+    return $new_dat;
+}
+
 function query_events($q) {
     global $GA_DB_PATH;
     try {
@@ -302,6 +330,7 @@ function users_country_config($table_name, $start, $end) {
         $ds = [
             'label' => 'Users by Country',
             'data' => $data,
+            'borderRadius' => 50,
             'backgroundColor' => [
             'rgb(255, 99, 132)',
             'rgb(54, 162, 235)',
@@ -341,8 +370,8 @@ function users_country_config($table_name, $start, $end) {
 
     function config($formatted_data, $opts) {
         return [
-            'type' => 'doughnut',
-            //'type' => 'bar',
+            //'type' => 'doughnut',
+            'type' => 'bar',
             'data' => $formatted_data,
             'options' => $opts
         ];
@@ -653,8 +682,8 @@ function gh_events_config($start, $end) {
         // github views
         $db = new PDO("sqlite:$GH_DB_PATH");
         //$start .= 'T00:00:00Z'; $end .= 'T00:00:00Z';
-        $start = $ev_labels[0];
-        $end = $ev_labels[count($ev_labels)-1];
+        //$start = $ev_labels[0];
+        //$end = $ev_labels[count($ev_labels)-1];
         $start .= 'T00:00:00Z'; $end .= 'T00:00:00Z';
 
         $res = $db -> query("select * from \"ufs-community/ufs-weather-model/views\" where timestamp>=\"$start\" and timestamp<=\"$end\" order by timestamp;");
@@ -674,9 +703,11 @@ function gh_events_config($start, $end) {
             $ev_labels_map[$lab] = [$ev_names[$idx], $ev_values[$idx]]; 
         }
 
+        $new_labels = new_labels([$ev_labels, $gh_labels]);
+
         // Add event names to labels on dates where events occurred 
         $labels = [];
-        foreach($gh_labels as $idx => $lab) {
+        foreach($new_labels as $idx => $lab) {
             if (array_key_exists($lab, $ev_labels_map)) {
                 $labels[] = $lab . ' - ' . $ev_labels_map[$lab][0];
             }
@@ -686,19 +717,11 @@ function gh_events_config($start, $end) {
 
         }
 
-        $new_ev_values = [];
-        foreach($gh_labels as $idx => $lab) {
-            if (array_key_exists($lab, $ev_labels_map)) {
-                $new_ev_values[] = $ev_labels_map[$lab][1];
-            }
-            else {
-                $new_ev_values[] = 0;
-            }
-
-        }
+        $new_ev_values = new_data($new_labels, $ev_labels, $ev_values);
+        $new_gh_values = new_data($new_labels, $gh_labels, $gh_values);
 
 
-        $datasets = datasets($new_ev_values, $gh_values); 
+        $datasets = datasets($new_ev_values, $new_gh_values); 
         $formatted_data =  format_data($labels, $datasets);
         $opts = opts();
         $config = config($formatted_data, $opts);
@@ -790,8 +813,8 @@ function impressions_config($start, $end) {
         // page views
         // $db = new PDO("sqlite:$GH_DB_PATH");
         //$start .= 'T00:00:00Z'; $end .= 'T00:00:00Z';
-        $start = $imp_labels[0];
-        $end = $imp_labels[count($imp_labels)-1];
+        //$start = $imp_labels[0];
+        //$end = $imp_labels[count($imp_labels)-1];
 
         $res = $db -> query("select * from page_views where timestamp>=\"$start\" and timestamp<=\"$end\" order by timestamp;");
 
@@ -836,6 +859,7 @@ function impressions_config($start, $end) {
 
     return $config;
 }
+
 
 function all_config($start, $end) {
     global $GA_DB_PATH;
@@ -950,6 +974,7 @@ function all_config($start, $end) {
 
         }
 
+
         // impressions data
         //$db = new PDO("sqlite:$GA_DB_PATH");
         //$res = $db -> query("select * from twitter;");
@@ -1021,39 +1046,17 @@ function all_config($start, $end) {
             $ev_labels_map[$lab] = [$ev_names[$idx], $ev_values[$idx]]; 
         }
 
-        // map of dates to impression values
-        $imp_labels_map = [];
-        foreach($imp_labels as $idx => $lab) {
-            $imp_labels_map[$lab] = $imp_values[$idx]; 
-        }
+        $new_labels = new_labels([$ev_labels, $imp_labels, $pv_labels, $ghv_labels, $ghc_labels]);
 
-        // Set event values to zero on dates where there are none
-        $new_ev_values = [];
-        foreach($pv_labels as $idx => $lab) {
-            if (array_key_exists($lab, $ev_labels_map)) {
-                $new_ev_values[] = $ev_labels_map[$lab][1];
-            }
-            else {
-                $new_ev_values[] = 0;
-            }
-
-        }
-
-        // Set impression values to zero on dates where there are none
-        $new_imp_values = [];
-        foreach($pv_labels as $idx => $lab) {
-            if (array_key_exists($lab, $imp_labels_map)) {
-                $new_imp_values[] = $imp_labels_map[$lab];
-            }
-            else {
-                $new_imp_values[] = 0;
-            }
-
-        }
+        $new_ev_values = new_data($new_labels, $ev_labels, $ev_values);
+        $new_imp_values = new_data($new_labels, $imp_labels, $imp_values);
+        $new_pv_values = new_data($new_labels, $pv_labels, $pv_values);
+        $new_ghv_values = new_data($new_labels, $ghv_labels, $ghv_values);
+        $new_ghc_values = new_data($new_labels, $ghc_labels, $ghc_values);
 
         // Add event names to labels on dates where events occurred 
         $labels = [];
-        foreach($pv_labels as $idx => $lab) {
+        foreach($new_labels as $idx => $lab) {
             if (array_key_exists($lab, $ev_labels_map)) {
                 $labels[] = $lab . ' - ' . $ev_labels_map[$lab][0];
             }
@@ -1064,7 +1067,7 @@ function all_config($start, $end) {
         }
 
         //$datasets = datasets($new_ev_values, $gh_values); 
-        $datasets = datasets($new_ev_values, $new_imp_values, $pv_values, $ghv_values, $ghc_values); 
+        $datasets = datasets($new_ev_values, $new_imp_values, $new_pv_values, $new_ghv_values, $new_ghc_values); 
         $formatted_data =  format_data($labels, $datasets);
         $opts = opts();
         $config = config($formatted_data, $opts);
