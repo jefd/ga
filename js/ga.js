@@ -10,27 +10,33 @@ const INITIAL_METRIC = 'new_users';
 const DEFAULT_START_DATE = '2022-01-25';
 const DEFAULT_END_DATE = new Date().toISOString().substring(0, 10)
 
-const METRICS = [
-    {name: 'new_users', type: 'web', title: 'New Users'}, 
-    {name: 'users_country', type: 'web', title: 'Users By Country'}, 
-    {name: 'followers', type: 'social', title: 'Social Media Followers'}, 
-    {name: 'hackathon', id: 1, type: 'event', title: 'Hackathon Participants'}, 
-    {name: 'codesprint', id: 2, type: 'event', title: 'Code Sprint Participants'}, 
-    {name: 'codefest', id: 3, type: 'event', title: 'Code Fest Participants'}, 
-    {name: 'mixed', type: 'mixed', title: 'Events / GitHub Views'}, 
-    {name: 'impressions', type: 'imp', title: 'Twitter Impressions / Page Views'}, 
-    {name: 'all', type: 'all', title: 'All'}, 
-];
+function getMetrics(eventTypes) {
+    let met0 = [
+        {name: 'new_users', type: 'web', title: 'New Users'}, 
+        {name: 'users_country', type: 'web', title: 'Users By Country'}, 
+        {name: 'followers', type: 'social', title: 'Social Media Followers'}, 
+    ];
 
-const EVENTS = [
-    {id: 1, name: "Hackathon"},
-    {id: 2, name: "Code Sprint"},
-    {id: 3, name: "Code Fest"},
-];
+    let met1 = [
+        {name: 'mixed', type: 'mixed', title: 'Events / GitHub Views'}, 
+        {name: 'impressions', type: 'imp', title: 'Twitter Impressions / Page Views'}, 
+        {name: 'all', type: 'all', title: 'All'}, 
+    ];
+
+    for (et of eventTypes) {
+        met0.push(
+            {name: 'event', id: et.id, type: 'event', title: et.name}, 
+        );
+    }
+
+    return met0.concat(met1);
+}
 
 function Dash(initialVnode) {
 
     let model = {
+        metrics: null,
+        eventTypes: null,
         selectedMetric: INITIAL_METRIC,
         metric: INITIAL_METRIC,
         chart_config: null,
@@ -43,7 +49,7 @@ function Dash(initialVnode) {
     };
 
     function get_metric(name) {
-        for (metric of METRICS) {
+        for (metric of model.metrics) {
             if (metric['name'] === name) {
                 return metric
             }
@@ -77,6 +83,32 @@ function Dash(initialVnode) {
 
     }
 
+
+    function initData() {
+        model.loaded = false;
+        let url = `${BASE_URL}${API_PATH}/event-types`;
+		headers = {};
+		console.log("**** sending request **** " + url)
+		return m.request({
+			method: "GET",
+			url: url,
+			headers: headers,
+		})
+		.then(function(data){
+            model.eventTypes = data
+            model.metrics = getMetrics(data);
+            //model.chart_config = MOCK[model.metric]();
+            model.loaded = true;
+            console.log("**** RESPONSE **** ", data);
+            console.log("**** model **** ", model);
+            let url = getUrl();
+            updateData(url);
+		})
+        .catch(function(e) {
+            model.error = "Error loading data";
+        })
+    }
+
 	function updateData(url) {
         model.loaded = false;
 		headers = {};
@@ -97,10 +129,6 @@ function Dash(initialVnode) {
         })
 	}
 
-    function initData() {
-        let url = getUrl();
-        updateData(url);
-    }
 
     function metricCallback(e) {
         //e.redraw = false;
@@ -217,7 +245,7 @@ function Dash(initialVnode) {
         }
 
         let metricLabel = m("label", {for: 'metric-select'}, "Metric");
-        let metricSelect = selectView('metric-select', 'metric-select', METRICS, metricCallback);
+        let metricSelect = selectView('metric-select', 'metric-select', model.metrics, metricCallback);
 
         let btn = buttonView('Submit', submitCallback);
 
