@@ -135,6 +135,12 @@ function Dash(initialVnode) {
     function metricCallback(e) {
         //e.redraw = false;
         model.selectedMetric = e.target.value;
+        /*
+        if (model.selectedMetric === 'users_country')
+            model.showDatePicker = false
+        else
+            model.showDatePicker = true
+        */
     }
 
     function submitCallback(e) {
