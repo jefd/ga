@@ -23,10 +23,12 @@ function getMetrics(eventTypes) {
         {name: 'all', type: 'all', title: 'All'}, 
     ];
 
+    let n = 0;
     for (et of eventTypes) {
         met0.push(
-            {name: 'event', id: et.id, type: 'event', title: et.name}, 
+            {name: `event${n}`, id: et.id, type: 'event', title: et.name}, 
         );
+        n += 1;
     }
 
     return met0.concat(met1);
