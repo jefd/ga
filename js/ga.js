@@ -25,8 +25,10 @@ function getMetrics(eventTypes) {
 
     let n = 0;
     for (et of eventTypes) {
+        //let nm = et.name.replace(/\s+/g, '').toLowerCase();
         met0.push(
             {name: `event${n}`, id: et.id, type: 'event', title: et.name}, 
+            //{name: nm, id: et.id, type: 'event', title: et.name}, 
         );
         n += 1;
     }
