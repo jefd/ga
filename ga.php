@@ -564,6 +564,7 @@ function events_config($event_type_id, $start, $end) {
         $res = $db -> query(get_events_sql($start, $end, $event_type_id));
 
         $labels = [];
+        $event_names = [];
         $public = [];
         $academia = [];
         $government = [];
@@ -571,6 +572,7 @@ function events_config($event_type_id, $start, $end) {
         foreach ($res as $row) {
 
             $labels[] = $row['start'];
+            $event_names[] = $row['name'];
             $public[] = intval($row['public']);
             $academia[] = intval($row['academia']);
             $government[] = intval($row['government']);
@@ -580,8 +582,16 @@ function events_config($event_type_id, $start, $end) {
 
         }
 
+        
+        $new_labels = [];
+        foreach($labels as $idx => $lab) {
+            //$new_labels[] = $lab . ' - ' . $event_names[$idx];
+            $new_labels[] = $event_names[$idx] . ' - ' . $lab;
+        }
+         
+
         $datasets = datasets($public, $academia, $government, $industry); 
-        $formatted_data =  format_data($labels, $datasets);
+        $formatted_data =  format_data($new_labels, $datasets);
         $opts = opts($event_type_name);
         $config = config($formatted_data, $opts);
 
@@ -709,7 +719,8 @@ function gh_events_config($start, $end) {
         $labels = [];
         foreach($new_labels as $idx => $lab) {
             if (array_key_exists($lab, $ev_labels_map)) {
-                $labels[] = $lab . ' - ' . $ev_labels_map[$lab][0];
+                //$labels[] = $lab . ' - ' . $ev_labels_map[$lab][0];
+                $labels[] = $ev_labels_map[$lab][0] . ' - ' . $lab;
             }
             else {
                 $labels[] = $lab;
@@ -1058,7 +1069,8 @@ function all_config($start, $end) {
         $labels = [];
         foreach($new_labels as $idx => $lab) {
             if (array_key_exists($lab, $ev_labels_map)) {
-                $labels[] = $lab . ' - ' . $ev_labels_map[$lab][0];
+                //$labels[] = $lab . ' - ' . $ev_labels_map[$lab][0];
+                $labels[] = $ev_labels_map[$lab][0] . ' - ' . $lab;
             }
             else {
                 $labels[] = $lab;
