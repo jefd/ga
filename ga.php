@@ -6,7 +6,7 @@ $VERSION = 'v1.0.0';
 $GA_DB_PATH = dirname(__FILE__) . '/ga.db';
 $GH_DB_PATH = dirname(__FILE__) . '/metrics.db';
 
-$DECIMATION = 15;
+$MAX = 20;
 
 add_shortcode( 'ga', 'ga_dash_board');
 function ga_dash_board($atts) {
@@ -35,6 +35,23 @@ add_action('rest_api_init', function () {
         'callback' => 'get_ga_data'
     ));
 });
+
+
+function isDate($value) {
+
+    if (!$value) {
+        return false;
+    }
+
+    try {
+        new \DateTime($value);
+        return true;
+    } catch (\Exception $e) {
+        return false;
+    }
+}
+
+
 
 function new_labels($labels_list) {
     $l = [];
@@ -230,29 +247,42 @@ function accumulate($data) {
 
 }
 
-function prune($labels, $data) {
-    global $DECIMATION;
+function filter($labels, $data, $n) {
+    // take every nth data point but keep data with labels that contain extra
+    // text other than just a date because those are events that we want to
+    // always display
 
-    $pruned_labels = [];
-    $pruned_data = [];
+    $filtered_labels = [];
+    $filtered_data = [];
 
-    foreach ($labels as $idx => $value) {
-        if ($idx % $DECIMATION === 0) {
-            $pruned_labels[] = $value;
-            $pruned_data[] = $data[$idx];
+    foreach ($labels as $idx =>  $value) {
+        if ($idx % $n === 0 || ! isDate($value)) {
+            $filtered_labels[] = $value;
+            $filtered_data[] = $data[$idx];
         }
     }
 
-    return [$pruned_labels, $pruned_data];
+    return [$filtered_labels, $filtered_data];
 
 }
+
+function sample_interval($lst) {
+    global $MAX;
+    $tot = count($lst);
+    $interval =  intval($tot/$MAX);
+    if ($interval < 1)
+        $interval = 1;
+    return $interval;
+}
+ 
 
 function new_users_config($table_name, $start, $end) {
     global $GA_DB_PATH;
 
     function datasets($data) {
         $ds = [
-            'label' => 'New Users',
+            'type' => 'bar',
+            'label' => 'Cumulative New Users',
             'data' => $data,
             'backgroundColor' => '#0099D8',
             'borderRadius' => 50,
@@ -284,7 +314,7 @@ function new_users_config($table_name, $start, $end) {
 
     function config($formatted_data, $opts) {
         return [
-            'type' => 'bar',
+            //'type' => 'bar',
             'data' => $formatted_data,
             'options' => $opts
         ];
@@ -303,14 +333,17 @@ function new_users_config($table_name, $start, $end) {
 
         }
 
-        $accumulated_data = accumulate($data);
-        $pruned = prune($labels, $accumulated_data);
+        $n = sample_interval($labels);
+        //$n = 15;
         
-        $pruned_labels = $pruned[0];
-        $pruned_data = $pruned[1];
+        $accumulated_data = accumulate($data);
+        $filtered = filter($labels, $accumulated_data, $n);
+        
+        $filtered_labels = $filtered[0];
+        $filtered_data = $filtered[1];
 
-        $datasets = datasets($pruned_data); 
-        $formatted_data =  format_data($pruned_labels, $datasets);
+        $datasets = datasets($filtered_data); 
+        $formatted_data =  format_data($filtered_labels, $datasets);
         $opts = opts();
         $config = config($formatted_data, $opts);
 
@@ -328,6 +361,7 @@ function users_country_config($table_name, $start, $end) {
 
     function datasets($data) {
         $ds = [
+            'type' => 'bar',
             'label' => 'Users by Country',
             'data' => $data,
             'borderRadius' => 50,
@@ -371,7 +405,7 @@ function users_country_config($table_name, $start, $end) {
     function config($formatted_data, $opts) {
         return [
             //'type' => 'doughnut',
-            'type' => 'bar',
+            //'type' => 'bar',
             'data' => $formatted_data,
             'options' => $opts
         ];
@@ -412,19 +446,22 @@ function followers_config($table_name, $start, $end) {
     function datasets($twitter, $ig, $fb) {
         $ds = [];
 
-        $ds[] = ['label' => 'Twitter',
+        $ds[] = ['type' => 'bar',
+                 'label' => 'Twitter',
                  'data' => $twitter,
                  'backgroundColor' => '#0099D8',
                  'borderRadius' => 50,
                 ];
 
-        $ds[] = ['label' => 'Instagram',
+        $ds[] = ['type' => 'bar',
+                 'label' => 'Instagram',
                  'data' => $ig,
                  'backgroundColor' => '#D97200',
                  'borderRadius' => 50,
                 ];
 
-        $ds[] = ['label' => 'Facebook',
+        $ds[] = ['type' => 'bar',
+                 'label' => 'Facebook',
                  'data' => $fb,
                  'backgroundColor' => '#00A54F',
                  'borderRadius' => 50,
@@ -456,7 +493,7 @@ function followers_config($table_name, $start, $end) {
 
     function config($formatted_data, $opts) {
         return [
-            'type' => 'bar',
+            //'type' => 'bar',
             'data' => $formatted_data,
             'options' => $opts
         ];
@@ -479,8 +516,27 @@ function followers_config($table_name, $start, $end) {
             $facebook[] = intval($row['facebook']);
 
         }
-        $datasets = datasets($twitter, $instagram, $facebook); 
-        $formatted_data =  format_data($labels, $datasets);
+
+
+        /******************************************************/
+        //$n = sample_interval($labels);
+        $n = sample_interval($labels);
+        
+        
+        $filtered_twitter = filter($labels, $twitter, $n);
+        $filtered_instagram = filter($labels, $instagram, $n);
+        $filtered_facebook = filter($labels, $facebook, $n);
+        
+        $filtered_labels = $filtered_twitter[0];
+        $filtered_twitter_data = $filtered_twitter[1];
+        $filtered_instagram_data = $filtered_instagram[1];
+        $filtered_facebook_data = $filtered_facebook[1];
+        /******************************************************/
+
+        //$datasets = datasets($twitter, $instagram, $facebook); 
+        $datasets = datasets($filtered_twitter_data, $filtered_instagram_data, $filtered_facebook_data); 
+        //$formatted_data =  format_data($labels, $datasets);
+        $formatted_data =  format_data($filtered_labels, $datasets);
         $opts = opts();
         $config = config($formatted_data, $opts);
 
@@ -501,25 +557,29 @@ function events_config($event_type_id, $start, $end) {
     function datasets($gp, $ac, $gov, $ind) {
         $ds = [];
 
-        $ds[] = ['label' => 'General Public',
+        $ds[] = ['type' => 'bar',
+                 'label' => 'General Public',
                  'data' => $gp,
                  'backgroundColor' => '#0A4595',
                  'borderRadius' => 50,
                 ];
 
-        $ds[] = ['label' => 'Academia',
+        $ds[] = ['type' => 'bar',
+                 'label' => 'Academia',
                  'data' => $ac,
                  'backgroundColor' => '#0099D8',
                  'borderRadius' => 50,
                 ];
 
-        $ds[] = ['label' => 'Government',
+        $ds[] = ['type' => 'bar',
+                 'label' => 'Government',
                  'data' => $gov,
                  'backgroundColor' => '#D97200',
                  'borderRadius' => 50,
                 ];
 
-        $ds[] = ['label' => 'Industry',
+        $ds[] = ['type' => 'bar',
+                 'label' => 'Industry',
                  'data' => $ind,
                  'backgroundColor' => '#00A54F',
                  'borderRadius' => 50,
@@ -551,7 +611,7 @@ function events_config($event_type_id, $start, $end) {
 
     function config($formatted_data, $opts) {
         return [
-            'type' => 'bar',
+            //'type' => 'bar',
             'data' => $formatted_data,
             'options' => $opts
         ];
@@ -649,7 +709,8 @@ function gh_events_config($start, $end) {
             'responsive' => true,
             'plugins' => ['title' => ['display' => true, 'text' => 'GitHub/Events']],
             'indexAxis' => 'x',
-            'scales' => ['y' => ['type' => 'logarithmic']],
+            //'scales' => ['y' => ['type' => 'logarithmic']],
+            //'scales' => ['x' => ['ticks' => ['autoSkip' => false]]],
         ];
 
 
@@ -686,6 +747,7 @@ function gh_events_config($start, $end) {
             $industry = intval($row['industry']);
 
             $ev_values[] = $public + $academia + $government + $industry;
+            //$ev_values[] = 750;
 
         }
 
@@ -731,9 +793,22 @@ function gh_events_config($start, $end) {
         $new_ev_values = new_data($new_labels, $ev_labels, $ev_values);
         $new_gh_values = new_data($new_labels, $gh_labels, $gh_values);
 
+        
+        /******************************************************/
+        // Filter data
+        $n = sample_interval($labels);
+        //$n = 15;
+        $filtered_gh = filter($labels, $new_gh_values, $n);
+        $filtered_ev = filter($labels, $new_ev_values, $n);
 
-        $datasets = datasets($new_ev_values, $new_gh_values); 
-        $formatted_data =  format_data($labels, $datasets);
+        $filtered_labels = $filtered_gh[0];
+        $filtered_gh_values = $filtered_gh[1];
+        $filtered_ev_values = $filtered_ev[1];
+        /******************************************************/
+        
+
+        $datasets = datasets($filtered_ev_values, $filtered_gh_values); 
+        $formatted_data =  format_data($filtered_labels, $datasets);
         $opts = opts();
         $config = config($formatted_data, $opts);
 
@@ -788,7 +863,10 @@ function impressions_config($start, $end) {
             'responsive' => true,
             'plugins' => ['title' => ['display' => true, 'text' => 'Page Views/Impressions']],
             'indexAxis' => 'x',
-            'scales' => ['y' => ['type' => 'logarithmic']],
+            //'scales' => ['y' => ['type' => 'logarithmic']],
+            //'scales' => ['y' => ['type' => 'logarithmic'],
+            //             'x' => ['ticks' => ['autoSkip' => false]],
+            //            ],
         ];
 
         return $opts;
@@ -884,11 +962,14 @@ function all_config($start, $end) {
         $ds[] = ['type' => 'bar',
                  'label' => 'Event Participants',
                  'data' => $ev_values,
-                 'backgroundColor' => '#f1c232',
+                 'backgroundColor' => '#0A4595',
                  'borderRadius' => 50,
                  'order' => 1,
                 ];
 
+        
+
+        /*
         $ds[] = ['type' => 'bar',
                  'label' => 'Twitter Impressions',
                  'data' => $imp_values,
@@ -896,6 +977,8 @@ function all_config($start, $end) {
                  'borderRadius' => 50,
                  'order' => 1,
                 ];
+         */
+         
 
         $ds[] = ['type' => 'line',
                  'tension' => 0.4,
@@ -945,7 +1028,12 @@ function all_config($start, $end) {
             'responsive' => true,
             'plugins' => ['title' => ['display' => true, 'text' => 'All']],
             'indexAxis' => 'x',
-            'scales' => ['y' => ['type' => 'logarithmic']],
+            //'scales' => ['y' => ['type' => 'logarithmic']],
+            //'scales' => ['x' => ['ticks' => ['autoSkip' => false]]],
+            //'scales' => ['y' => ['type' => 'logarithmic'],
+            //           'x' => ['ticks' => ['autoSkip' => false]],
+            //          ],
+
         ];
 
 
@@ -1079,8 +1167,31 @@ function all_config($start, $end) {
         }
 
         //$datasets = datasets($new_ev_values, $gh_values); 
-        $datasets = datasets($new_ev_values, $new_imp_values, $new_pv_values, $new_ghv_values, $new_ghc_values); 
-        $formatted_data =  format_data($labels, $datasets);
+
+        /******************************************************/
+        // Filter data
+        //
+        $n = sample_interval($labels);
+        
+        $filtered_ghv = filter($labels, $new_ghv_values, $n);
+        $filtered_ghc = filter($labels, $new_ghc_values, $n);
+        $filtered_pv = filter($labels, $new_pv_values, $n);
+        $filtered_ev = filter($labels, $new_ev_values, $n);
+        $filtered_imp = filter($labels, $new_imp_values, $n);
+
+        $filtered_labels = $filtered_pv[0];
+        $filtered_ghv_values = $filtered_ghv[1];
+        $filtered_ghc_values = $filtered_ghc[1];
+        $filtered_pv_values = $filtered_pv[1];
+        $filtered_ev_values = $filtered_ev[1];
+        $filtered_imp_values = $filtered_imp[1];
+        /******************************************************/
+
+        
+        //$datasets = datasets($new_ev_values, $new_imp_values, $new_pv_values, $new_ghv_values, $new_ghc_values); 
+        $datasets = datasets($filtered_ev_values, $filtered_imp_values, $filtered_pv_values, $filtered_ghv_values, $filtered_ghc_values); 
+        //$formatted_data =  format_data($labels, $datasets);
+        $formatted_data =  format_data($filtered_labels, $datasets);
         $opts = opts();
         $config = config($formatted_data, $opts);
 

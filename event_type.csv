@@ -1,4 +1,7 @@
-id,name
-1,Hackathon
-2,Code Sprint
-3,Code Fest
+type_id,type_name
+1,App Training
+2,CodeFest
+3,AMS
+4,AGU
+5,UIFCW
+

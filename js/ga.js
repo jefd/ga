@@ -10,6 +10,8 @@ const INITIAL_METRIC = 'new_users';
 const DEFAULT_START_DATE = '2022-01-25';
 const DEFAULT_END_DATE = new Date().toISOString().substring(0, 10)
 
+
+
 function getMetrics(eventTypes) {
     let met0 = [
         {name: 'new_users', type: 'web', title: 'New Users'}, 
@@ -19,7 +21,7 @@ function getMetrics(eventTypes) {
 
     let met1 = [
         {name: 'mixed', type: 'mixed', title: 'Events / GitHub Views'}, 
-        {name: 'impressions', type: 'imp', title: 'Twitter Impressions / Page Views'}, 
+        //{name: 'impressions', type: 'imp', title: 'Twitter Impressions / Page Views'}, 
         {name: 'all', type: 'all', title: 'All'}, 
     ];
 
@@ -58,6 +60,24 @@ function Dash(initialVnode) {
                 return metric
             }
         }
+    }
+
+    function isDate(s) {
+        d = Date.parse(s.trim());
+        return (isNaN(d) ? false : true);
+    }
+
+    function ticks_callback(val, index) {
+
+        let label = this.getLabelForValue(val);
+
+        //if( index % 5 === 0 || label.trim().length > 10) {
+        if(label.trim().length > 10) {
+            return label;
+        }
+        else
+            return '';
+
     }
 
     function getUrl() {
@@ -123,7 +143,18 @@ function Dash(initialVnode) {
 			headers: headers,
 		})
 		.then(function(data){
+            let current_metric = get_metric(model.metric);
+            if (current_metric['type'] === 'mixed' || 
+                current_metric['type'] === 'all') {
+                // set scales.x.ticks to autoskip = false
+                // set ticks callback
+                data.options.scales = {
+                    x: {ticks: {autoSkip: false, callback: ticks_callback} } 
+                };
+            }
+
             model.chart_config = data
+            
             //model.chart_config = MOCK[model.metric]();
             model.loaded = true;
             console.log("**** RESPONSE **** ", data);
@@ -137,12 +168,12 @@ function Dash(initialVnode) {
     function metricCallback(e) {
         //e.redraw = false;
         model.selectedMetric = e.target.value;
-        /*
+        
         if (model.selectedMetric === 'users_country')
             model.showDatePicker = false
         else
             model.showDatePicker = true
-        */
+        
     }
 
     function submitCallback(e) {
