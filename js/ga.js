@@ -67,6 +67,13 @@ function Dash(initialVnode) {
         return (isNaN(d) ? false : true);
     }
 
+    function getDefaultStartDate() {
+        let d = new Date();
+        let y = d.getDate() - 30;
+        d.setDate(y);
+        return d.toISOString().substring(0, 10);
+    }
+
     function ticks_callback(val, index) {
 
         let label = this.getLabelForValue(val);
@@ -77,6 +84,13 @@ function Dash(initialVnode) {
         }
         else
             return '';
+
+    }
+
+    function ticks_callback0(val, index) {
+
+        let label = this.getLabelForValue(val);
+        return label;
 
     }
 
@@ -124,7 +138,7 @@ function Dash(initialVnode) {
             //model.chart_config = MOCK[model.metric]();
             model.loaded = true;
             console.log("**** RESPONSE **** ", data);
-            console.log("**** model **** ", model);
+            //console.log("**** model **** ", model);
             let url = getUrl();
             updateData(url);
 		})
@@ -144,13 +158,22 @@ function Dash(initialVnode) {
 		})
 		.then(function(data){
             let current_metric = get_metric(model.metric);
+            
+            // set autoSkip to true if dataset is larger than 100
+            let skip = (data.data.labels.length > 75);
+
+            let cb = skip ? ticks_callback0 : ticks_callback;
+
             if (current_metric['type'] === 'mixed' || 
                 current_metric['type'] === 'all') {
                 // set scales.x.ticks to autoskip = false
                 // set ticks callback
+                
                 data.options.scales = {
-                    x: {ticks: {autoSkip: false, callback: ticks_callback} } 
+                    x: {ticks: {autoSkip: skip, callback: cb} } 
+                    //x: {ticks: {autoSkip: skip} } 
                 };
+            
             }
 
             model.chart_config = data
