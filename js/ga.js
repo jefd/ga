@@ -170,8 +170,8 @@ function Dash(initialVnode) {
                 // set ticks callback
                 
                 data.options.scales = {
-                    x: {ticks: {autoSkip: skip, callback: cb} } 
-                    //x: {ticks: {autoSkip: skip} } 
+                    x: {ticks: {autoSkip: skip, callback: cb} },
+                    //y: {type: 'logarithmic'},
                 };
             
             }
