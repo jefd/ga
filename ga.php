@@ -248,9 +248,6 @@ function accumulate($data) {
 }
 
 function filter($labels, $data, $n) {
-    // take every nth data point but keep data with labels that contain extra
-    // text other than just a date because those are events that we want to
-    // always display
 
     $filtered_labels = [];
     $filtered_data = [];
@@ -267,6 +264,7 @@ function filter($labels, $data, $n) {
 }
 
 function sample_interval($lst) {
+    //return 1;
     global $MAX;
     $tot = count($lst);
     $interval =  intval($tot/$MAX);
@@ -282,7 +280,7 @@ function new_users_config($table_name, $start, $end) {
     function datasets($data) {
         $ds = [
             'type' => 'bar',
-            'label' => 'Cumulative New Users',
+            'label' => 'Epic Site New Users (cumulative)',
             'data' => $data,
             'backgroundColor' => '#0099D8',
             'borderRadius' => 50,

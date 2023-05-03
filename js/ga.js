@@ -20,7 +20,7 @@ function getMetrics(eventTypes) {
     ];
 
     let met1 = [
-        {name: 'mixed', type: 'mixed', title: 'Events / GitHub Views'}, 
+        //{name: 'mixed', type: 'mixed', title: 'Events / GitHub Views'}, 
         //{name: 'impressions', type: 'imp', title: 'Twitter Impressions / Page Views'}, 
         {name: 'all', type: 'all', title: 'All'}, 
     ];

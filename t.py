@@ -1,4 +1,4 @@
-f = open('new_users.csv')
+f = open('new_users2.csv')
 
 for line in f:
     line = line.strip()
