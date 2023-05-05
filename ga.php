@@ -10,7 +10,7 @@ $MAX = 20;
 
 add_shortcode( 'ga', 'ga_dash_board');
 function ga_dash_board($atts) {
-    global $VERSION;
+    global $GA_VERSION;
     
     return <<<EOT
     <div id="dashboard-app"></div>
