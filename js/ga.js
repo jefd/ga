@@ -1,7 +1,8 @@
 //const BASE_URL =  "https://epic.noaa.gov";
-const BASE_URL =  "https://rayv-webix4.jpl.nasa.gov/devel/ep";
-//const BASE_URL =  "";
-const TEST_URL = "https://jsonplaceholder.typicode.com/todos/1";
+//const BASE_URL =  "https://rayv-webix4.jpl.nasa.gov/devel/ep";
+//const TEST_URL = "https://jsonplaceholder.typicode.com/todos/1";
+
+const BASE_URL =  "";
 
 const API_PATH = "/wp-json/ga/v1";
 
@@ -347,7 +348,7 @@ function ga(initialVnode) {
         }
 }
 
-let root = document.getElementById('ga-app');
+let root = document.getElementById('ga-dash');
 
 
 m.mount(root, ga);

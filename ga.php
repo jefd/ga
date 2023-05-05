@@ -1,23 +1,29 @@
 <?php
 
-$GA_VERSION = 'v1.0.0';
-
 
 $GA_DB_PATH = dirname(__FILE__) . '/ga.db';
-$GH_DB_PATH = dirname(__FILE__) . '/metrics.db';
+$GH_DB_PATH = dirname(__FILE__) . '/gh.db';
 
 $MAX = 20;
 
-add_shortcode( 'ga', 'ga_dash_board');
-function ga_dash_board($atts) {
-    global $GA_VERSION;
+
+function register_ga_scripts() {
+    $d = get_stylesheet_directory_uri();
+
+    wp_register_script( 'chart', 'https://cdn.jsdelivr.net/npm/chart.js@4.2.1', array(), null, true );
+    wp_register_script( 'mithril', 'https://unpkg.com/mithril@2.2.2/mithril.js', array(), null, true );
+    wp_register_script( 'ga', $d . '/ga.js', array(), null, true );
+}
+
+add_action( 'wp_enqueue_scripts', 'register_ga_scripts' );
+
+add_shortcode( 'ga-dash', 'ga_dash');
+function ga_dash($atts) {
+    wp_enqueue_script('chart');
+    wp_enqueue_script('mithril');
+    wp_enqueue_script('ga');
     
-    return <<<EOT
-    <div id="ga-app"></div>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.2.1"></script>
-    <script src="https://unpkg.com/mithril@2.2.2/mithril.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/jefd/ga@{$GA_VERSION}/js/ga.js"></script>
-    EOT;
+    return '<div id="ga-dash"></div>';
 }
 
 
