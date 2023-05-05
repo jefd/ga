@@ -16,7 +16,7 @@ function ga_dash_board($atts) {
     <div id="dashboard-app"></div>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.2.1"></script>
     <script src="https://unpkg.com/mithril@2.2.2/mithril.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/jefd/dash@{$VERSION}/wp-content/themes/hello-elementor-child/js/dash.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/jefd/ga@{$VERSION}/js/ga.js"></script>
     EOT;
 }
 
