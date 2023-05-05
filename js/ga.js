@@ -38,7 +38,7 @@ function getMetrics(eventTypes) {
     return met0.concat(met1);
 }
 
-function Dash(initialVnode) {
+function ga(initialVnode) {
 
     let model = {
         metrics: null,
@@ -350,7 +350,7 @@ function Dash(initialVnode) {
 let root = document.getElementById('ga-app');
 
 
-m.mount(root, Dash);
+m.mount(root, ga);
 
 
 
