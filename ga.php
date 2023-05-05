@@ -13,7 +13,7 @@ function ga_dash_board($atts) {
     global $GA_VERSION;
     
     return <<<EOT
-    <div id="dashboard-app"></div>
+    <div id="ga-app"></div>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.2.1"></script>
     <script src="https://unpkg.com/mithril@2.2.2/mithril.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/jefd/ga@{$GA_VERSION}/js/ga.js"></script>
